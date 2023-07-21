@@ -1,5 +1,4 @@
 // Importing necessary constants and types from external modules
-import type { NextApiRequest, NextApiResponse } from "next";
 import {
   ERROR_MESSAGES,
   INTERNAL_SERVER_ERROR,
@@ -9,8 +8,8 @@ import {
 
 // Defining the request handler function
 export default async function handler(
-  req: NextApiRequest, // Request object
-  res: NextApiResponse // Response object
+  req: any, // Request object
+  res: any // Response object
 ) {
   // Checking if the request method is POST
   if (req.method === "GET") {

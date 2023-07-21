@@ -1,9 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: any, res: any) {
   if (req.method === "POST") {
     const { product } = req.body;
 

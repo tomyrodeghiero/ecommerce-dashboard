@@ -334,15 +334,19 @@ app.post("/api/copilot", async (req, res) => {
 
 app.post("/api/product-completion", async (req, res) => {
   try {
-    const { product } = req.body;
+    const { content } = req.body;
 
     const productCompletion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [
-        { role: "system", content: "You are a helpful assistant." },
+        {
+          role: "system",
+          content:
+            "Eres un asistente servicial de Argentina especializado en marketing y redes sociales para comercio electrónico. Tu tarea es generar una descripción atractiva para un producto, utilizando hasta un máximo de 5 emojis elegantes por mensaje para resaltar las características y beneficios.",
+        },
         {
           role: "user",
-          content: `Genera una descripción atractiva para un post de Instagram sobre un ${product} con emogis.`,
+          content: `${content}`,
         },
       ],
     });

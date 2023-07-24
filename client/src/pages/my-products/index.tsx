@@ -1,3 +1,5 @@
+import "react-toastify/dist/ReactToastify.css";
+
 // ** Styled Component Import
 import ApexChartWrapper from "src/@core/styles/libs/react-apexcharts";
 
@@ -94,11 +96,7 @@ const MyProductsPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem("authenticated")) {
-      router.push("/my-account");
-    } else {
-      fetchProducts();
-    }
+    fetchProducts();
   }, []);
 
   return (

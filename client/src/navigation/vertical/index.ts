@@ -16,22 +16,25 @@ import { VerticalNavItemsType } from "src/@core/layouts/types";
 const navigation = (): VerticalNavItemsType => {
   return [
     {
-      title: "Dashboard",
+      sectionTitle: "Mi E-commerce",
+    },
+    {
+      title: "Inicio",
       icon: HomeOutline,
       path: "/",
     },
     {
       title: "Mis Productos",
-      icon: AccountCogOutline,
+      icon: CubeOutline,
       path: "/my-products",
     },
     {
       title: "Añadir Producto",
-      icon: AccountCogOutline,
+      icon: AccountPlusOutline,
       path: "/add-product",
     },
     {
-      title: "Account Settings",
+      title: "Ajustes de Cuenta",
       icon: AccountCogOutline,
       path: "/account-settings",
     },
@@ -39,13 +42,13 @@ const navigation = (): VerticalNavItemsType => {
       sectionTitle: "Pages",
     },
     {
-      title: "Login",
+      title: "Inicio de Sesión",
       icon: Login,
       path: "/pages/login",
       openInNewTab: true,
     },
     {
-      title: "Register",
+      title: "Registrarse",
       icon: AccountPlusOutline,
       path: "/pages/register",
       openInNewTab: true,
@@ -60,28 +63,28 @@ const navigation = (): VerticalNavItemsType => {
       sectionTitle: "User Interface",
     },
     {
-      title: "Typography",
+      title: "Tipografía",
       icon: FormatLetterCase,
       path: "/typography",
     },
     {
-      title: "Icons",
+      title: "Iconos",
       path: "/icons",
       icon: GoogleCirclesExtended,
     },
     {
-      title: "Cards",
+      title: "Tarjetas",
       icon: CreditCardOutline,
       path: "/cards",
     },
     {
-      title: "Tables",
+      title: "Tablas",
       icon: Table,
       path: "/tables",
     },
     {
       icon: CubeOutline,
-      title: "Form Layouts",
+      title: "Diseños de Formulario",
       path: "/form-layouts",
     },
   ];

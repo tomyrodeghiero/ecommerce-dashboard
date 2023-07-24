@@ -17,7 +17,7 @@ export default async function handler(req: any, res: any) {
       if (response.ok) {
         // Check if response status is 200-299
         const responseData = await response.json(); // Await the json promise
-        res.status(200).send(responseData);
+        res.status(200).json({ message: responseData }); // Wrap the string into a JSON object
       } else {
         res
           .status(500)

@@ -1,6 +1,6 @@
 import "react-toastify/dist/ReactToastify.css";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import dynamic from "next/dynamic";
 import { toast, ToastContainer } from "react-toastify";
@@ -9,13 +9,37 @@ import LoadingSpinner from "src/@core/components/loading-spinner";
 import Button from "@mui/material/Button";
 import { CATEGORIES } from "src/utils/constants";
 
-const DynamicReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const formats = [
+  "header",
+  "font",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "list",
+  "bullet",
+  "indent",
+  "link",
+  "image",
+  "color",
+];
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const AddProductPage = () => {
   const [productName, setProductName] = useState<string>("");
   const [productPrice, setProductPrice] = useState<
     string | number | readonly string[] | any | undefined
   >(undefined);
+
+  const quillRef = useRef(null);
+
+  useEffect(() => {
+    console.log(quillRef.current);
+  }, [quillRef]);
+
   const [activeTab, setActiveTab] = useState<string>("description");
   const [productDescription, setProductDescription] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
@@ -121,20 +145,30 @@ const AddProductPage = () => {
     }
   };
 
-  const DescriptionEditor = ({ value, onChange, generateDescription }: any) => (
-    <div className="relative">
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <img
-          className="absolute cursor-pointer right-2 top-2 text-white px-2 py-1"
-          onClick={generateDescription}
-          src={STARS_COPILOT_ICON}
-          alt="Stars Copilot"
-        />
-      )}
-      <DynamicReactQuill value={value} onChange={onChange} />
-    </div>
+  const DescriptionEditor = React.useCallback(
+    ({ value, onChange, generateDescription, loading }: any) => {
+      return (
+        <div className="relative">
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <img
+              className="absolute cursor-pointer right-2 top-2 text-white px-2 py-1"
+              onClick={generateDescription}
+              src={STARS_COPILOT_ICON}
+              alt="Stars Copilot"
+            />
+          )}
+          <ReactQuill
+            ref={quillRef}
+            value={value}
+            onChange={onChange}
+            formats={formats}
+          />
+        </div>
+      );
+    },
+    []
   );
 
   return (
@@ -154,7 +188,7 @@ const AddProductPage = () => {
           <div className="flex items-center mt-2 w-full">
             <span className="text-gray-700 text-2xl font-medium">$</span>
             <input
-              className="text-gray-700 bg-gray-200 ml-2 w-1/4 text-2xl font-medium"
+              className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
               value={productPrice}
               placeholder="1.200,00"
               type="number"
@@ -213,6 +247,7 @@ const AddProductPage = () => {
               generateDescription={() =>
                 generateProductDescription(productName)
               }
+              loading={isLoading}
             />
           )}
           {activeTab === "briefDescription" && (
@@ -222,6 +257,7 @@ const AddProductPage = () => {
               generateDescription={() =>
                 generateProductDescription(productName, true)
               }
+              loading={isLoading}
             />
           )}
         </div>

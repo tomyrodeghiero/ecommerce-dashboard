@@ -40,7 +40,7 @@ const AddProductPage = () => {
     console.log(quillRef.current);
   }, [quillRef]);
 
-  const [activeTab, setActiveTab] = useState<string>("description");
+  const [activeTab, setActiveTab] = useState<string>("briefDescription");
   const [productDescription, setProductDescription] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +56,34 @@ const AddProductPage = () => {
 
   const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("productbr", productBriefDescription);
+
+    // Validación de campos
+    if (!productName) {
+      return showErrorMessage("El nombre del producto está vacío");
+    }
+
+    if (!productPrice) {
+      return showErrorMessage("El precio del producto no está especificado");
+    }
+
+    if (!productBriefDescription) {
+      return showErrorMessage("La descripción breve del producto está vacía");
+    }
+
+    if (!productDescription) {
+      return showErrorMessage("La descripción del producto está vacía");
+    }
+
+    if (!category) {
+      return showErrorMessage("La categoría del producto no está especificada");
+    }
+
+    if (!mainImageUrl) {
+      return showErrorMessage(
+        "La URL principal de la imagen del producto está vacía"
+      );
+    }
 
     const formData = new FormData();
     formData.append("name", productName);
@@ -104,6 +132,20 @@ const AddProductPage = () => {
       alert("Failed to add product");
     }
   };
+
+  // Mostrar un toast de error con el mensaje específico
+  function showErrorMessage(message: string) {
+    toast.error(message, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  }
 
   const handleSecondaryImagesChange = (e: any, index: number) => {
     let newPreviewImages = [...previewImages];
@@ -218,9 +260,9 @@ const AddProductPage = () => {
             </FormControl>
           </div>
 
-          <div className="border-b mt-2 lg:mt-0 mb-5 flex border-gray-300">
+          <div className="border-b mt-2 lg:mt-1 mb-5 flex justify-between border-gray-300">
             <button
-              className={`px-12 py-3 ${
+              className={`flex-grow flex justify-center py-3 items-center ${
                 activeTab === "briefDescription"
                   ? "border-b-2 border-black"
                   : "text-gray-700"
@@ -230,7 +272,7 @@ const AddProductPage = () => {
               Introducción
             </button>
             <button
-              className={`px-12 py-3 ${
+              className={`flex-grow flex justify-center py-3 items-center ${
                 activeTab === "description"
                   ? "border-b-2 border-black"
                   : "text-gray-700"
@@ -240,6 +282,7 @@ const AddProductPage = () => {
               Descripción
             </button>
           </div>
+
           {activeTab === "description" && (
             <DescriptionEditor
               value={productDescription}

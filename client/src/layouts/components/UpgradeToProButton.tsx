@@ -46,7 +46,7 @@ const BuyNowButton = () => {
         position: "fixed",
       }}
     >
-      <img src={COPILOT} alt="Copilot" className="h-14 w-14 cursor-pointer" />
+      {/* <img src={COPILOT} alt="Copilot" className="h-14 w-14 cursor-pointer" /> */}
     </Box>
   );
 };

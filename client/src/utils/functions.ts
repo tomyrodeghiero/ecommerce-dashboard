@@ -8,7 +8,7 @@ export function formatPriceARS(price: any): any {
 
   priceStr = entirePart + "," + decimalPart;
 
-  priceStr = `${priceStr}`;
+  priceStr = `$ ${priceStr}`;
 
   return priceStr;
 }

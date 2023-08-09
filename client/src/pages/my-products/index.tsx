@@ -99,6 +99,10 @@ const MyProductsPage = () => {
     fetchProducts();
   }, []);
 
+  const handleEdit = (productId: string) => {
+    router.push(`/edit-product/${productId}`);
+  };
+
   return (
     <ApexChartWrapper>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 lg:py-8">
@@ -106,29 +110,40 @@ const MyProductsPage = () => {
           <StyledCard
             className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
             key={product._id}
+            onClick={() => handleEdit(product._id)}
           >
             <img
               src={OPTIONS_ICON}
               alt="Options"
               className="w-4 object-cover cursor-pointer absolute top-2 right-2"
-              onClick={() => setSelectedProduct(product._id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                setSelectedProduct(product._id);
+              }}
             />
+
             {selectedProduct === product._id && (
               <div
                 ref={dropdownRef}
                 className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
               >
-                {/* <Link
-                href={`/my-account/admin/edit-product/${product._id}`}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Edit
-              </Link> */}
                 <div
-                  onClick={() => handleDelete(product._id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleEdit(product._id);
+                  }}
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
                 >
-                  Delete
+                  Editar
+                </div>
+                <div
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleDelete(product._id);
+                  }}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
+                >
+                  Eliminar
                 </div>
               </div>
             )}
@@ -136,11 +151,14 @@ const MyProductsPage = () => {
             <img
               src={product.mainImageUrl}
               alt={product.name}
-              className="w-40 mt-5 mx-auto rounded-full object-cover"
+              className="w-48 h-48 mt-5 mx-auto rounded-full object-cover"
             />
+
             <div className="mt-5 flex flex-col items-center">
-              <h3 className="font-bold text-[1.1rem]">{product.name}</h3>
-              <p className="text-yellow-800 mt-1">
+              <h3 className="font-bold text-[1.1rem] text-center">
+                {product.name}
+              </h3>
+              <p className="text-yellow-800 mt-1 font-semibold">
                 {formatPriceARS(product.price)}
               </p>
             </div>

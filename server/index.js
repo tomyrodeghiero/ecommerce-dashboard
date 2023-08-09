@@ -186,17 +186,40 @@ app.delete("/api/delete-product/:name", async (req, res) => {
 });
 
 // Edit product
-app.put("/api/edit-product/:id", async (req, res) => {
-  const productId = req.params.id;
-  const updatedProduct = req.body;
+app.put(
+  "/api/edit-product/:id",
+  uploadMiddleware.array("images"),
+  async (req, res) => {
+    const productId = req.params.id;
+    const updatedFields = req.body;
 
-  try {
-    await Product.findByIdAndUpdate(productId, updatedProduct);
-    res.status(200).send("Product updated successfully");
-  } catch (error) {
-    res.status(500).send(error);
+    // Handle images if they exist
+    if (req.files && req.files.length > 0) {
+      const mainImageUrl = req.files[0].path;
+      const secondaryImageUrls = req.files.slice(1).map((file) => file.path);
+
+      updatedFields.mainImageUrl = mainImageUrl;
+      updatedFields.secondaryImageUrls = secondaryImageUrls;
+    }
+
+    try {
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).send("Product not found");
+      }
+
+      // Update only the provided fields
+      for (let field in updatedFields) {
+        product[field] = updatedFields[field];
+      }
+
+      await product.save();
+      res.status(200).send("Product updated successfully");
+    } catch (error) {
+      res.status(500).send(error);
+    }
   }
-});
+);
 
 // create an api to get all the products
 app.get("/api/products", async (req, res) => {
@@ -358,5 +381,5 @@ app.post("/api/product-completion", async (req, res) => {
 });
 
 // Listen port
-app.listen(5000);
-console.log("Server listening on port", 5000);
+app.listen(5001);
+console.log("Server listening on port", 5001);

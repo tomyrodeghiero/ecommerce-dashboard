@@ -19,7 +19,7 @@ const createOrder = async (req, res) => {
       failure: `${process.env.FRONTEND_PUBLIC_URL}/api/failure`,
       pending: `${process.env.FRONTEND_PUBLIC_URL}/api/pending`,
     },
-    notification_url: `${process.env.NGROK}/webhook`,
+    notification_url: `${process.env.FRONTEND_PUBLIC_URL}/webhook`,
   });
 
   res.send(result.body);

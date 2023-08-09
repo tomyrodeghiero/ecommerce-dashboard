@@ -34,11 +34,6 @@ const navigation = (): VerticalNavItemsType => {
       path: "/add-product",
     },
     {
-      title: "Ajustes de Cuenta",
-      icon: AccountCogOutline,
-      path: "/account-settings",
-    },
-    {
       sectionTitle: "Pages",
     },
     {
@@ -46,46 +41,6 @@ const navigation = (): VerticalNavItemsType => {
       icon: Login,
       path: "/pages/login",
       openInNewTab: true,
-    },
-    {
-      title: "Registrarse",
-      icon: AccountPlusOutline,
-      path: "/pages/register",
-      openInNewTab: true,
-    },
-    {
-      title: "Error",
-      icon: AlertCircleOutline,
-      path: "/pages/error",
-      openInNewTab: true,
-    },
-    {
-      sectionTitle: "User Interface",
-    },
-    {
-      title: "Tipografía",
-      icon: FormatLetterCase,
-      path: "/typography",
-    },
-    {
-      title: "Iconos",
-      path: "/icons",
-      icon: GoogleCirclesExtended,
-    },
-    {
-      title: "Tarjetas",
-      icon: CreditCardOutline,
-      path: "/cards",
-    },
-    {
-      title: "Tablas",
-      icon: Table,
-      path: "/tables",
-    },
-    {
-      icon: CubeOutline,
-      title: "Diseños de Formulario",
-      path: "/form-layouts",
     },
   ];
 };

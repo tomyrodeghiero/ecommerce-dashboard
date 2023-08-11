@@ -241,7 +241,7 @@ const EditProductPage = () => {
       <div className="lg:flex w-full gap-8">
         <div className="w-full lg:1/2">
           <p className="uppercase font-medium text-sm text-gray-500">
-            ⌚ Joyería & Relogería
+            💡 Iluminación Creativa
           </p>
           <input
             className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"

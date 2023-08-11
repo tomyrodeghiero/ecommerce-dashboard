@@ -52,7 +52,7 @@ const AddProductPage = () => {
   const [category, setCategory] = useState("");
   const [isOnSale, setIsOnSale] = useState(false);
   const [discount, setDiscount] = useState(0);
-  const [productStock, setProductStock] = useState(0);
+  const [productStock, setProductStock] = useState<any>(1);
 
   const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +94,7 @@ const AddProductPage = () => {
     formData.append("category", category);
     formData.append("isOnSale", JSON.stringify(isOnSale));
     formData.append("discount", discount.toString());
-    formData.append("stock", productStock.toString());
+    formData.append("stock", productStock);
 
     if (mainImageUrl) {
       formData.append("images", mainImageUrl, mainImageUrl.name);
@@ -218,7 +218,7 @@ const AddProductPage = () => {
       <div className="lg:flex w-full gap-8">
         <div className="w-full lg:1/2">
           <p className="uppercase font-medium text-sm text-gray-500">
-            ⌚ Joyería & Relogería
+            💡 Iluminación Creativa
           </p>
           <input
             className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"
@@ -227,14 +227,24 @@ const AddProductPage = () => {
             onChange={(e) => setProductName(e.target.value)}
           />
 
-          <div className="flex items-center mt-2 w-full">
-            <span className="text-gray-700 text-2xl font-medium">$</span>
+          <div className="flex justify-between items-center mt-2 w-full">
+            <div className="flex items-center">
+              <span className="text-gray-700 text-2xl font-medium">$</span>
+              <input
+                className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
+                value={productPrice}
+                placeholder="1.200,00"
+                type="number"
+                onChange={(e: any) => setProductPrice(e.target.value)}
+              />
+            </div>
+
             <input
-              className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
-              value={productPrice}
-              placeholder="1.200,00"
+              className="text-gray-700 border border-gray-400 bg-transparent rounded text-center flex justify-center h-8 p-2 w-8 text-lg font-medium"
+              value={productStock}
+              placeholder="1"
               type="number"
-              onChange={(e: any) => setProductPrice(e.target.value)}
+              onChange={(e: any) => setProductStock(e.target.value)}
             />
           </div>
 

@@ -29,7 +29,7 @@ export default async function handler(req: any, res: any) {
       // formData.append("additionalInformation", additionalInformation);
       formData.append("description", description);
       formData.append("category", category);
-      // formData.append("stock", stock);
+      formData.append("stock", stock);
       // formData.append("isOnSale", isOnSale);
       // formData.append("discount", discount);
 

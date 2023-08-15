@@ -1,15 +1,8 @@
+// Categories
 export const CATEGORIES = [
-  "Lámparas colgantes",
-  "Lámparas de techo",
-  "Lámparas de pie",
-  "Lámparas de mesa",
-  "Lámparas de pared",
-  "Luces empotradas",
-  "Luces de riel",
-  "Tiras LED",
-  "Lámparas con ventilador",
-  "Luces exteriores",
-  "Lámparas decorativas",
-  "Luz nocturna",
-  "Lámparas con sensor de movimiento",
+  "Aros",
+  "Cadenas",
+  "Conjuntos",
+  "Dijes",
+  "Pulseras"
 ];

@@ -218,7 +218,7 @@ const AddProductPage = () => {
       <div className="lg:flex w-full gap-8">
         <div className="w-full lg:1/2">
           <p className="uppercase font-medium text-sm text-gray-500">
-            💡 Iluminación Creativa
+            🛍️ Mi E-commerce
           </p>
           <input
             className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"
@@ -239,13 +239,16 @@ const AddProductPage = () => {
               />
             </div>
 
-            <input
-              className="text-gray-700 border border-gray-400 bg-transparent rounded text-center flex justify-center h-8 p-2 w-8 text-lg font-medium"
-              value={productStock}
-              placeholder="1"
-              type="number"
-              onChange={(e: any) => setProductStock(e.target.value)}
-            />
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600">🧮 Stock:</span>
+              <input
+                className="text-gray-700 border border-gray-400 bg-transparent rounded text-center flex justify-center h-8 p-2 w-10 text-lg font-medium"
+                value={productStock}
+                placeholder="1"
+                type="number"
+                onChange={(e: any) => setProductStock(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="mt-5">

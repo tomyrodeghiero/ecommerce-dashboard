@@ -223,7 +223,7 @@ const AddProductPage = () => {
           <input
             className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"
             value={productName}
-            placeholder="Collar de Oro"
+            placeholder="Lámpara Moderna"
             onChange={(e) => setProductName(e.target.value)}
           />
 

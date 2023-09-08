@@ -9,6 +9,7 @@ import LoadingSpinner from "src/@core/components/loading-spinner";
 import Button from "@mui/material/Button";
 import { CATEGORIES } from "src/utils/constants";
 import { useRouter } from "next/router";
+import { formatPriceARS, processPrice } from "src/utils/functions";
 
 const formats = [
   "header",
@@ -34,9 +35,10 @@ const EditProductPage = () => {
   const { id } = router.query; // Obtiene el ID desde la URL.
 
   const [productName, setProductName] = useState<string>("");
-  const [productPrice, setProductPrice] = useState<
-    string | number | readonly string[] | any | undefined
-  >(undefined);
+  const [productPrice, setProductPrice] = useState<number | null>(null);
+  const [formattedProductPrice, setFormattedProductPrice] =
+    useState<string>("");
+  const [productPriceInput, setProductPriceInput] = useState<string>("");
 
   const quillRef = useRef(null);
 
@@ -48,6 +50,7 @@ const EditProductPage = () => {
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<File | null>(null);
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [secondaryImageUrls, setSecondaryImageUrls] = useState<File[]>([]);
 
   const [productBriefDescription, setProductBriefDescription] = useState("");
@@ -55,7 +58,16 @@ const EditProductPage = () => {
   const [category, setCategory] = useState("");
   const [isOnSale, setIsOnSale] = useState(false);
   const [discount, setDiscount] = useState(0);
-  const [productStock, setProductStock] = useState(0);
+  const [productStock, setProductStock] = useState<any>(1);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setMainImageFile(event.target.files[0]);
+      // If you want to show a preview of the selected image, you can also update mainImageUrl:
+      const imageUrl: any = URL.createObjectURL(event.target.files[0]);
+      setMainImageUrl(imageUrl);
+    }
+  };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -66,6 +78,7 @@ const EditProductPage = () => {
           // Asigna los datos del producto a los estados respectivos.
           setProductName(product.name);
           setProductPrice(product.price);
+          setProductPriceInput(formatPriceARS(product.price));
           setProductDescription(product.description);
           setProductBriefDescription(product.briefDescription);
           setCategory(product.category);
@@ -119,8 +132,12 @@ const EditProductPage = () => {
     formData.append("discount", discount.toString());
     formData.append("stock", productStock.toString());
 
-    if (mainImageUrl) {
-      formData.append("images", mainImageUrl, mainImageUrl.name);
+    if (mainImageFile) {
+      formData.append("images", mainImageFile, mainImageFile.name);
+    }
+    // else if you want to send the existing image URL back to the server:
+    else if (mainImageUrl) {
+      formData.append("mainImageUrl", mainImageUrl);
     }
 
     secondaryImageUrls.forEach((image: any, index: number) => {
@@ -136,6 +153,7 @@ const EditProductPage = () => {
       setProductName("");
       setProductPrice(0);
       setProductDescription("");
+      setProductPriceInput("");
       setProductBriefDescription("");
       setCategory(""); // Limpia la categoría
       setMainImageUrl(null); // Limpia la imagen principal
@@ -241,7 +259,7 @@ const EditProductPage = () => {
       <div className="lg:flex w-full gap-8">
         <div className="w-full lg:1/2">
           <p className="uppercase font-medium text-sm text-gray-500">
-            💡 Iluminación Creativa
+            🛍️ Mi E-commerce
           </p>
           <input
             className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"
@@ -250,15 +268,41 @@ const EditProductPage = () => {
             onChange={(e) => setProductName(e.target.value)}
           />
 
-          <div className="flex items-center mt-2 w-full">
-            <span className="text-gray-700 text-2xl font-medium">$</span>
-            <input
-              className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
-              value={productPrice}
-              placeholder="1.200,00"
-              type="number"
-              onChange={(e: any) => setProductPrice(e.target.value)}
-            />
+          <div className="flex justify-between items-center mt-2 w-full">
+            <div className="flex items-center">
+              <span className="text-gray-700 text-2xl font-medium">$</span>
+              <input
+                className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
+                value={productPriceInput}
+                placeholder="1.200,00"
+                type="text"
+                onChange={(e: any) => {
+                  // Permitir números y puntos
+                  const onlyNumbersAndDots = e.target.value.replace(
+                    /[^0-9.]/g,
+                    ""
+                  );
+                  setProductPriceInput(onlyNumbersAndDots);
+                  setProductPrice(processPrice(onlyNumbersAndDots));
+                }}
+                onBlur={() => {
+                  if (productPrice !== null) {
+                    setProductPriceInput(formatPriceARS(productPrice));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600">🧮 Stock:</span>
+              <input
+                className="text-gray-700 border border-gray-400 bg-transparent rounded text-center flex justify-center h-8 p-2 w-10 text-lg font-medium"
+                value={productStock}
+                placeholder="1"
+                type="number"
+                onChange={(e: any) => setProductStock(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="mt-5">
@@ -377,7 +421,12 @@ const EditProductPage = () => {
               type="file"
               onChange={(e: any) => {
                 if (e.target.files.length > 0) {
-                  setMainImageUrl(e.target.files[0]);
+                  // Set the File object for future submission
+                  setMainImageFile(e.target.files[0]);
+
+                  // If you want to show a preview of the selected image:
+                  const imageUrl: any = URL.createObjectURL(e.target.files[0]);
+                  setMainImageUrl(imageUrl);
                 }
               }}
               required

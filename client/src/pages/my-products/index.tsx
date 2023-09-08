@@ -41,14 +41,20 @@ const MyProductsPage = () => {
 
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
+
   const dropdownRef = useRef<any>(null);
 
   const fetchProducts = async () => {
+    setLoadingProducts(true);
+
     const response = await fetch("/api/products");
     if (response.ok) {
       const data = await response.json();
       setProducts(data);
     }
+
+    setLoadingProducts(false);
   };
 
   const handleDelete = async (productId: string) => {
@@ -106,68 +112,81 @@ const MyProductsPage = () => {
   return (
     <ApexChartWrapper>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 lg:py-8">
-        {products.map((product) => (
-          <StyledCard
-            className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
-            key={product._id}
-            onClick={() => handleEdit(product._id)}
-          >
-            <img
-              src={OPTIONS_ICON}
-              alt="Options"
-              className="w-4 object-cover cursor-pointer absolute top-2 right-2"
-              onClick={(event) => {
-                event.stopPropagation();
-                setSelectedProduct(product._id);
-              }}
-            />
-
-            {selectedProduct === product._id && (
-              <div
-                ref={dropdownRef}
-                className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
+        {loadingProducts
+          ? Array.from({ length: 8 }).map((_, idx) => (
+              <StyledCard
+                key={idx}
+                className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
               >
-                <div
+                <div className="w-48 h-48 mt-5 mx-auto bg-gray-200 rounded-full"></div>
+                <div className="mt-5 flex flex-col items-center">
+                  <div className="bg-gray-200 w-2/3 h-4 my-2 rounded"></div>
+                  <div className="bg-gray-200 w-1/2 h-4 my-2 rounded"></div>
+                </div>
+              </StyledCard>
+            ))
+          : products.map((product) => (
+              <StyledCard
+                className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
+                key={product._id}
+                onClick={() => handleEdit(product._id)}
+              >
+                <img
+                  src={OPTIONS_ICON}
+                  alt="Options"
+                  className="w-4 object-cover cursor-pointer absolute top-2 right-2"
                   onClick={(event) => {
                     event.stopPropagation();
-                    handleEdit(product._id);
+                    setSelectedProduct(product._id);
                   }}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
-                >
-                  Editar
-                </div>
-                <div
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    handleDelete(product._id);
-                  }}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
-                >
-                  Eliminar
-                </div>
-              </div>
-            )}
+                />
 
-            <img
-              src={product.mainImageUrl}
-              alt={product.name}
-              className="w-48 h-48 mt-5 mx-auto rounded-full object-cover"
-            />
+                {selectedProduct === product._id && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
+                  >
+                    <div
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleEdit(product._id);
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    >
+                      Editar
+                    </div>
+                    <div
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDelete(product._id);
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    >
+                      Eliminar
+                    </div>
+                  </div>
+                )}
 
-            <div className="mt-5 flex flex-col items-center">
-              <h3 className="font-bold text-[1.1rem] text-center">
-                {product.name}
-              </h3>
-              <p className="text-yellow-800 mt-1 font-semibold">
-                {formatPriceARS(product.price)}
-              </p>
-            </div>
-            <TriangleImg
-              alt="triangle background"
-              src={`/images/misc/${imageSrc}`}
-            />
-          </StyledCard>
-        ))}
+                <img
+                  src={product.mainImageUrl}
+                  alt={product.name}
+                  className="w-48 h-48 mt-5 mx-auto rounded-full object-cover"
+                />
+
+                <div className="mt-5 flex flex-col items-center">
+                  <h3 className="font-bold text-[1.1rem] text-center">
+                    {product.name}
+                  </h3>
+                  <p className="text-yellow-800 mt-1 font-semibold">
+                    {formatPriceARS(product.price)}
+                  </p>
+                </div>
+                <TriangleImg
+                  alt="triangle background"
+                  src={`/images/misc/${imageSrc}`}
+                />
+              </StyledCard>
+            ))}
 
         <ToastContainer
           position="top-right"

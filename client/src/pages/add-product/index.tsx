@@ -8,6 +8,7 @@ import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
 import Button from "@mui/material/Button";
 import { CATEGORIES } from "src/utils/constants";
+import { formatPriceARS, processPrice } from "src/utils/functions";
 
 const formats = [
   "header",
@@ -30,9 +31,8 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const AddProductPage = () => {
   const [productName, setProductName] = useState<string>("");
-  const [productPrice, setProductPrice] = useState<
-    string | number | readonly string[] | any | undefined
-  >(undefined);
+  const [productPrice, setProductPrice] = useState<number | null>(null);
+  const [productPriceInput, setProductPriceInput] = useState<string>("");
 
   const quillRef = useRef(null);
 
@@ -232,10 +232,23 @@ const AddProductPage = () => {
               <span className="text-gray-700 text-2xl font-medium">$</span>
               <input
                 className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
-                value={productPrice}
+                value={productPriceInput}
                 placeholder="1.200,00"
-                type="number"
-                onChange={(e: any) => setProductPrice(e.target.value)}
+                type="text"
+                onChange={(e: any) => {
+                  // Permitir números y puntos
+                  const onlyNumbersAndDots = e.target.value.replace(
+                    /[^0-9.]/g,
+                    ""
+                  );
+                  setProductPriceInput(onlyNumbersAndDots);
+                  setProductPrice(processPrice(onlyNumbersAndDots));
+                }}
+                onBlur={() => {
+                  if (productPrice !== null) {
+                    setProductPriceInput(formatPriceARS(productPrice));
+                  }
+                }}
               />
             </div>
 

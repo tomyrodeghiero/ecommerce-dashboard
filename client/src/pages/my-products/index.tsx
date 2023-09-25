@@ -48,7 +48,7 @@ const MyProductsPage = () => {
   const fetchProducts = async () => {
     setLoadingProducts(true);
 
-    const response = await fetch("/api/products");
+    const response = await fetch("/api/products?page=1&limit=100");
     if (response.ok) {
       const data = await response.json();
       setProducts(data.products);

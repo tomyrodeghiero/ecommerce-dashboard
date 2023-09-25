@@ -41,11 +41,24 @@ app.use(paymentRoutes);
 
 mongoose.connect(process.env.DB_HOST);
 
-// GET all products
+// GET all products with pagination
 app.get("/api/products", async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const page = parseInt(req.query.page, 12) || 1; // Por defecto la página es 1
+    const limit = parseInt(req.query.limit, 13) || 12;
+    const skip = (page - 1) * limit;
+
+    const total = await Product.countDocuments();
+    const products = await Product.find().skip(skip).limit(limit);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      totalPages: totalPages,
+      currentPage: page,
+      totalProducts: total,
+      products: products,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

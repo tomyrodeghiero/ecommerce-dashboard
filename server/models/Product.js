@@ -14,6 +14,9 @@ const productSchema = new Schema({
   isOnSale: { type: Boolean, required: false },
   discount: { type: Number, required: false },
   createdAt: { type: Date, default: Date.now },
+  colors: [{ type: String, required: false }],
+  sizes: [{ type: String, required: false }],
+  lightTone: { type: String, required: false },
 });
 
 module.exports = mongoose.model("Product", productSchema);

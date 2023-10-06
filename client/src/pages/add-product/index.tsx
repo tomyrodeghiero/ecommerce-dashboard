@@ -1,7 +1,14 @@
 import "react-toastify/dist/ReactToastify.css";
 
 import React, { useEffect, useRef, useState } from "react";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import {
+  Checkbox,
+  FormControl,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import dynamic from "next/dynamic";
 import { toast, ToastContainer } from "react-toastify";
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
@@ -33,6 +40,28 @@ const AddProductPage = () => {
   const [productName, setProductName] = useState<string>("");
   const [productPrice, setProductPrice] = useState<number | null>(null);
   const [productPriceInput, setProductPriceInput] = useState<string>("");
+
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [lightTone, setLightTone] = useState("");
+
+  const addBreaksAfterPeriods = (text: string): string => {
+    return text.replace(/\./g, ".<br>");
+  };
+
+  const colors = [
+    { name: "Rojo Suave", hex: "#FF6F6F" },
+    { name: "Verde Menta", hex: "#98FB98" },
+    { name: "Azul Cielo", hex: "#87CEEB" },
+    { name: "Amarillo Claro", hex: "#FFFACD" },
+    { name: "Blanco", hex: "#F5F5F5" },
+    { name: "Melocotón", hex: "#FFE5B4" },
+    { name: "Aqua", hex: "#B0E0E6" },
+    { name: "Rosado", hex: "#FFC0CB" },
+  ];
+
+  const sizes = ["Pequeño", "Mediano", "Grande", "Extra Grande"];
+  const lightTones = ["Cálido", "Neutro", "Frío", "Luz del Día", "Anochecer"];
 
   const quillRef = useRef(null);
 
@@ -96,6 +125,16 @@ const AddProductPage = () => {
     formData.append("discount", discount.toString());
     formData.append("stock", productStock);
 
+    selectedColors.forEach((color) => {
+      formData.append("colors", color);
+    });
+
+    selectedSizes.forEach((size) => {
+      formData.append("sizes", size);
+    });
+
+    formData.append("lightTone", lightTone);
+
     if (mainImageUrl) {
       formData.append("images", mainImageUrl, mainImageUrl.name);
     }
@@ -158,9 +197,9 @@ const AddProductPage = () => {
     additional: boolean = false
   ) => {
     setIsLoading(true);
-    const prompt = additional
+    const prompt = !additional
       ? `Genera una descripción detallada para el producto ${product}, destacando todas sus características y beneficios.`
-      : `Genera una breve introducción para el producto ${product}, resaltando sus puntos clave.`;
+      : `Genera una muy breve introducción para el producto ${product}, resaltando sus puntos clave.`;
 
     try {
       const response = await fetch("/api/product-completion", {
@@ -173,9 +212,12 @@ const AddProductPage = () => {
 
       if (response.ok) {
         const responseData = await response.text();
+        console.log("response.data -> ", responseData);
+        console.log("newlines.data -> ", addBreaksAfterPeriods(responseData));
+
         additional
-          ? setProductBriefDescription(responseData)
-          : setProductDescription(responseData);
+          ? setProductBriefDescription(addBreaksAfterPeriods(responseData))
+          : setProductDescription(addBreaksAfterPeriods(responseData));
       } else {
         throw new Error("Error with product completion API");
       }
@@ -203,7 +245,7 @@ const AddProductPage = () => {
           )}
           <ReactQuill
             ref={quillRef}
-            value={value}
+            value={addBreaksAfterPeriods(value)}
             onChange={onChange}
             formats={formats}
           />
@@ -231,7 +273,7 @@ const AddProductPage = () => {
             <div className="flex items-center">
               <span className="text-gray-700 text-2xl font-medium">$</span>
               <input
-                className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
+                className="text-gray-700 bg-gray-200 ml-2 w-1/2 text-2xl font-medium"
                 value={productPriceInput}
                 placeholder="1.200,00"
                 type="text"
@@ -265,25 +307,98 @@ const AddProductPage = () => {
           </div>
 
           <div className="mt-5">
-            <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label" className="w-full">
-                Categoría
-              </InputLabel>
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="outlined-category">Categoría</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={category}
-                className="w-full"
-                label="Categoría"
                 onChange={(e) => setCategory(e.target.value)}
+                label="Categoría"
               >
-                {CATEGORIES.map((category: string, index: number) => (
-                  <MenuItem key={index} className="w-full" value={category}>
+                {CATEGORIES.map((category, index) => (
+                  <MenuItem key={index} value={category}>
                     {category}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
+            <div className="mt-5 grid grid-cols-3 gap-4">
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel id="colors-label">Colores</InputLabel>
+                <Select
+                  labelId="colors-label"
+                  id="colors"
+                  multiple
+                  value={selectedColors}
+                  onChange={(e) =>
+                    setSelectedColors(e.target.value as string[])
+                  }
+                  label="Colores"
+                  renderValue={(selected) =>
+                    (selected as string[])
+                      .map((colorHex) => {
+                        const color = colors.find((c) => c.hex === colorHex);
+                        return color ? color.name : "";
+                      })
+                      .join(", ")
+                  }
+                >
+                  {colors.map((colorOption, index) => (
+                    <MenuItem key={index} value={colorOption.hex}>
+                      <Checkbox
+                        checked={selectedColors.includes(colorOption.hex)}
+                      />
+                      <ListItemText primary={colorOption.name} />
+                      <div
+                        style={{
+                          width: "1rem",
+                          height: "1rem",
+                          borderRadius: "50%",
+                          backgroundColor: colorOption.hex,
+                          display: "inline-block",
+                          marginLeft: "10px",
+                        }}
+                      ></div>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel id="sizes-label">Tamaños</InputLabel>
+                <Select
+                  labelId="sizes-label"
+                  id="sizes"
+                  multiple
+                  value={selectedSizes}
+                  onChange={(e) => setSelectedSizes(e.target.value as string[])}
+                  label="Tamaños"
+                  renderValue={(selected) => (selected as string[]).join(", ")}
+                >
+                  {sizes.map((size, index) => (
+                    <MenuItem key={index} value={size}>
+                      <Checkbox checked={selectedSizes.includes(size)} />
+                      <ListItemText primary={size} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel>Tono de Luz</InputLabel>
+                <Select
+                  value={lightTone}
+                  onChange={(e) => setLightTone(e.target.value)}
+                  label="Tono de Luz"
+                >
+                  {lightTones.map((lightToneOption, index) => (
+                    <MenuItem key={index} value={lightToneOption}>
+                      {lightToneOption}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
           </div>
 
           <div className="border-b mt-2 lg:mt-1 mb-5 flex justify-between border-gray-300">

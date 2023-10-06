@@ -18,11 +18,11 @@ const navigation = (): VerticalNavItemsType => {
     {
       sectionTitle: "Mi E-commerce",
     },
-    {
-      title: "Inicio",
-      icon: HomeOutline,
-      path: "/",
-    },
+    // {
+    //   title: "Inicio",
+    //   icon: HomeOutline,
+    //   path: "/",
+    // },
     {
       title: "Mis Productos",
       icon: CubeOutline,
@@ -33,15 +33,15 @@ const navigation = (): VerticalNavItemsType => {
       icon: AccountPlusOutline,
       path: "/add-product",
     },
-    {
-      sectionTitle: "Pages",
-    },
-    {
-      title: "Inicio de Sesión",
-      icon: Login,
-      path: "/pages/login",
-      openInNewTab: true,
-    },
+    // {
+    //   sectionTitle: "Pages",
+    // },
+    // {
+    //   title: "Inicio de Sesión",
+    //   icon: Login,
+    //   path: "/pages/login",
+    //   openInNewTab: true,
+    // },
   ];
 };
 

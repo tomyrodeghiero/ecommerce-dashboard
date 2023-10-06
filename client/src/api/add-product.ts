@@ -18,6 +18,9 @@ export default async function handler(req: any, res: any) {
       isOnSale,
       discount,
       category,
+      color,
+      size,
+      lightTone,
     } = req.body;
 
     try {
@@ -32,6 +35,18 @@ export default async function handler(req: any, res: any) {
       formData.append("stock", stock);
       // formData.append("isOnSale", isOnSale);
       // formData.append("discount", discount);
+      // Añadir los nuevos campos a formData
+      formData.append("color", color);
+      formData.append("size", size);
+      formData.append("lightTone", lightTone);
+      formData.append(
+        "color",
+        JSON.stringify(Array.isArray(color) ? color : [color])
+      );
+      formData.append(
+        "size",
+        JSON.stringify(Array.isArray(size) ? size : [size])
+      );
 
       // Add each secondary image
       images.forEach((image: any) => formData.append("images", image));

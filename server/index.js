@@ -126,6 +126,7 @@ app.post("/api/logout", (req, res) => {
 });
 
 // Add product
+// En tu ruta de Express para añadir un producto
 app.post(
   "/api/add-product",
   uploadMiddleware.array("images"),
@@ -141,9 +142,13 @@ app.post(
         additionalInformation,
         isOnSale,
         discount,
+        colors, // Modificado para aceptar múltiples colores
+        sizes, // Modificado para aceptar múltiples tamaños
+        lightTone,
       } = req.body;
-      const mainImageUrl = req.files[0].path; // Assuming the first file is the main image
-      const secondaryImageUrls = req.files.slice(1).map((file) => file.path); // Rest of the files are secondary images // Rest of the files are secondary images
+
+      const mainImageUrl = req.files[0].path;
+      const secondaryImageUrls = req.files.slice(1).map((file) => file.path);
 
       const product = new Product({
         name,
@@ -157,10 +162,13 @@ app.post(
         stock,
         isOnSale,
         discount,
+        colors, // Actualizado
+        sizes, // Actualizado
+        lightTone,
       });
 
       await product.save();
-      res.status(201).json({ message: "Product added successfully" });
+      res.status(200).json({ message: "Product added successfully" });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
@@ -378,7 +386,7 @@ app.post("/api/product-completion", async (req, res) => {
         {
           role: "system",
           content:
-            "Eres un asistente servicial de Argentina especializado en marketing y redes sociales para comercio electrónico. Tu tarea es generar una descripción atractiva para un producto, utilizando hasta un máximo de 5 emojis elegantes por mensaje para resaltar las características y beneficios.",
+            "Eres un asistente servicial de Argentina especializado en marketing y redes sociales para comercio electrónico. Tu tarea es generar una descripción atractiva para un producto de iluminación utilizando muy pocos emogis.",
         },
         {
           role: "user",

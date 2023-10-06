@@ -30,4 +30,13 @@ module.exports = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/my-products",
+        permanent: true,
+      },
+    ];
+  },
 };

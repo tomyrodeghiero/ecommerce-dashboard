@@ -50,14 +50,13 @@ const AddProductPage = () => {
   };
 
   const colors = [
-    { name: "Rojo Suave", hex: "#FF6F6F" },
-    { name: "Verde Menta", hex: "#98FB98" },
-    { name: "Azul Cielo", hex: "#87CEEB" },
-    { name: "Amarillo Claro", hex: "#FFFACD" },
-    { name: "Blanco", hex: "#F5F5F5" },
-    { name: "Melocotón", hex: "#FFE5B4" },
-    { name: "Aqua", hex: "#B0E0E6" },
-    { name: "Rosado", hex: "#FFC0CB" },
+    { name: "Blanco", hex: "#FFFFFF" },
+    { name: "Negro", hex: "#000000" },
+    { name: "Platín", hex: "#E5E4E2" },
+    { name: "Bronce", hex: "#CD7F32" },
+    { name: "Cobre", hex: "#B87333" },
+    { name: "Gris", hex: "#808080" },
+    { name: "Madera", hex: "#8B4513" },
   ];
 
   const sizes = ["Pequeño", "Mediano", "Grande", "Extra Grande"];

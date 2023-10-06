@@ -50,7 +50,7 @@ const AddProductPage = () => {
   };
 
   const colors = [
-    { name: "Blanco", hex: "#FFFFFF" },
+    { name: "Blanco", hex: "#F5F5F5" },
     { name: "Negro", hex: "#000000" },
     { name: "Platín", hex: "#E5E4E2" },
     { name: "Bronce", hex: "#CD7F32" },

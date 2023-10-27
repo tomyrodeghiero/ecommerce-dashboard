@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Checkbox,
   FormControl,
+  Input,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -38,8 +39,6 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const AddProductPage = () => {
   const [productName, setProductName] = useState<string>("");
-  const [productPrice, setProductPrice] = useState<number | null>(null);
-  const [productPriceInput, setProductPriceInput] = useState<string>("");
 
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -70,10 +69,12 @@ const AddProductPage = () => {
 
   const [activeTab, setActiveTab] = useState<string>("briefDescription");
   const [productDescription, setProductDescription] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<File | null>(null);
   const [previewImages, setPreviewImages] = useState<File[]>([]);
+  const [measurements, setMeasurements] = useState([
+    { measure: "", price: "" },
+  ]);
 
   const [productBriefDescription, setProductBriefDescription] = useState("");
   const [additionalInformation, setAdditionalInformation] = useState("");
@@ -89,10 +90,6 @@ const AddProductPage = () => {
     // Validación de campos
     if (!productName) {
       return showErrorMessage("El nombre del producto está vacío");
-    }
-
-    if (!productPrice) {
-      return showErrorMessage("El precio del producto no está especificado");
     }
 
     if (!productBriefDescription) {
@@ -113,9 +110,18 @@ const AddProductPage = () => {
       );
     }
 
+    if (
+      measurements.some(
+        (measurement) => !measurement.measure || !measurement.price
+      )
+    ) {
+      return showErrorMessage(
+        "Ensure all measurements have both measure and price filled"
+      );
+    }
+
     const formData = new FormData();
     formData.append("name", productName);
-    formData.append("price", productPrice.toString());
     formData.append("briefDescription", productBriefDescription);
     formData.append("description", productDescription);
     formData.append("additionalInformation", additionalInformation);
@@ -123,6 +129,10 @@ const AddProductPage = () => {
     formData.append("isOnSale", JSON.stringify(isOnSale));
     formData.append("discount", discount.toString());
     formData.append("stock", productStock);
+    measurements.forEach((measurement, index) => {
+      formData.append(`measurements[${index}][measure]`, measurement.measure);
+      formData.append(`measurements[${index}][price]`, measurement.price);
+    });
 
     selectedColors.forEach((color) => {
       formData.append("colors", color);
@@ -149,7 +159,7 @@ const AddProductPage = () => {
 
     if (response.ok) {
       setProductName("");
-      setProductPrice(0);
+      setMeasurements([{ measure: "", price: "" }]);
       setProductDescription("");
       setProductBriefDescription("");
       setCategory(""); // Limpia la categoría
@@ -254,6 +264,20 @@ const AddProductPage = () => {
     []
   );
 
+  const handleMeasurementChange = (
+    index: number,
+    field: "measure" | "price",
+    value: string
+  ) => {
+    const newMeasurements = [...measurements];
+    newMeasurements[index][field] = value;
+    setMeasurements(newMeasurements);
+  };
+
+  const addMeasurementField = () => {
+    setMeasurements((prev) => [...prev, { measure: "", price: "" }]);
+  };
+
   return (
     <>
       <div className="lg:flex w-full gap-8">
@@ -261,37 +285,13 @@ const AddProductPage = () => {
           <p className="uppercase font-medium text-sm text-gray-500">
             🛍️ Mi E-commerce
           </p>
-          <input
-            className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"
-            value={productName}
-            placeholder="Lámpara Moderna"
-            onChange={(e) => setProductName(e.target.value)}
-          />
-
-          <div className="flex justify-between items-center mt-2 w-full">
-            <div className="flex items-center">
-              <span className="text-gray-700 text-2xl font-medium">$</span>
-              <input
-                className="text-gray-700 bg-gray-200 ml-2 w-1/2 text-2xl font-medium"
-                value={productPriceInput}
-                placeholder="1.200,00"
-                type="text"
-                onChange={(e: any) => {
-                  // Permitir números y puntos
-                  const onlyNumbersAndDots = e.target.value.replace(
-                    /[^0-9.]/g,
-                    ""
-                  );
-                  setProductPriceInput(onlyNumbersAndDots);
-                  setProductPrice(processPrice(onlyNumbersAndDots));
-                }}
-                onBlur={() => {
-                  if (productPrice !== null) {
-                    setProductPriceInput(formatPriceARS(productPrice));
-                  }
-                }}
-              />
-            </div>
+          <div className="flex gap-5 items-center">
+            <input
+              className="text-gray-800 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
+              value={productName}
+              placeholder="Lámpara Moderna"
+              onChange={(e) => setProductName(e.target.value)}
+            />
 
             <div className="flex items-center space-x-2">
               <span className="text-gray-600">🧮 Stock:</span>
@@ -302,6 +302,61 @@ const AddProductPage = () => {
                 type="number"
                 onChange={(e: any) => setProductStock(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-2 w-full">
+            <div className="mt-4">
+              {measurements.map((measurement, index) => (
+                <div key={index} className="flex items-center gap-4 mb-2">
+                  <Input
+                    type="text"
+                    value={measurement.measure}
+                    onChange={(e) =>
+                      handleMeasurementChange(index, "measure", e.target.value)
+                    }
+                    placeholder="Medida"
+                    className="p-2 border rounded w-1/3"
+                  />
+                  <div className="flex items-center">
+                    <span className="text-gray-700 text-xl font-medium mr-2">
+                      $
+                    </span>
+                    <Input
+                      type="text"
+                      value={measurement.price}
+                      placeholder="Precio"
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        const filteredValue = inputValue.replace(
+                          /[^0-9.]/g,
+                          ""
+                        );
+                        handleMeasurementChange(index, "price", filteredValue);
+                      }}
+                      onBlur={() => {
+                        if (measurement.price) {
+                          handleMeasurementChange(
+                            index,
+                            "price",
+                            formatPriceARS(processPrice(measurement.price))
+                          );
+                        }
+                      }}
+                      className="p-2 border rounded w-40" // added some styling
+                    />
+                  </div>
+                  {index === measurements.length - 1 && (
+                    <button
+                      onClick={addMeasurementField}
+                      className="ml-4 flex items-center justify-center bg-blue-600 text-white h-8 w-8 rounded-full hover:bg-blue-700 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+                      aria-label="Agregar Medida/Precio"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -321,7 +376,7 @@ const AddProductPage = () => {
               </Select>
             </FormControl>
 
-            <div className="mt-5 grid grid-cols-3 gap-4">
+            <div className="mt-5 grid grid-cols-2 gap-4">
               <FormControl variant="outlined" fullWidth>
                 <InputLabel id="colors-label">Colores</InputLabel>
                 <Select
@@ -358,26 +413,6 @@ const AddProductPage = () => {
                           marginLeft: "10px",
                         }}
                       ></div>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel id="sizes-label">Tamaños</InputLabel>
-                <Select
-                  labelId="sizes-label"
-                  id="sizes"
-                  multiple
-                  value={selectedSizes}
-                  onChange={(e) => setSelectedSizes(e.target.value as string[])}
-                  label="Tamaños"
-                  renderValue={(selected) => (selected as string[]).join(", ")}
-                >
-                  {sizes.map((size, index) => (
-                    <MenuItem key={index} value={size}>
-                      <Checkbox checked={selectedSizes.includes(size)} />
-                      <ListItemText primary={size} />
                     </MenuItem>
                   ))}
                 </Select>

@@ -51,6 +51,7 @@ const MyProductsPage = () => {
     const response = await fetch("/api/products?page=1&limit=100");
     if (response.ok) {
       const data = await response.json();
+      console.log("PRODUCTS", data);
       setProducts(data.products);
     }
 
@@ -106,7 +107,19 @@ const MyProductsPage = () => {
   }, []);
 
   const handleEdit = (productId: string) => {
-    router.push(`/edit-product/${productId}`);
+    // router.push(`/edit-product/${productId}`);
+  };
+
+  const extractPrice = (product: any) => {
+    // Si el producto tiene un campo de precio directamente, úsalo
+
+    // Si el producto tiene un esquema de measures y deseas obtener el precio del primer measure, por ejemplo:
+    if (product.measurements && product.measurements.length > 0) {
+      return product.measurements[0].price; // asumiendo que measures es un array y cada measure tiene un campo de precio.
+    }
+
+    // Retorna 0 si no se puede determinar el precio (puedes ajustar esto según tus necesidades)
+    return 0;
   };
 
   return (
@@ -146,7 +159,7 @@ const MyProductsPage = () => {
                     ref={dropdownRef}
                     className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
                   >
-                    <div
+                    {/* <div
                       onClick={(event) => {
                         event.stopPropagation();
                         handleEdit(product._id);
@@ -154,7 +167,7 @@ const MyProductsPage = () => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
                     >
                       Editar
-                    </div>
+                    </div> */}
                     <div
                       onClick={(event) => {
                         event.stopPropagation();
@@ -178,7 +191,7 @@ const MyProductsPage = () => {
                     {product.name}
                   </h3>
                   <p className="text-yellow-800 mt-1 font-semibold">
-                    {formatPriceARS(product.price)}
+                    {formatPriceARS(product.price) || extractPrice(product)}
                   </p>
                 </div>
                 <TriangleImg

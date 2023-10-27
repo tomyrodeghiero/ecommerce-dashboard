@@ -1,16 +1,18 @@
 export function formatPriceARS(price: any): any {
-  let priceStr = price.toFixed(2).replace(".", ",");
+  if (typeof price === "number") {
+    let priceStr = price.toFixed(2).replace(".", ",");
 
-  let [entirePart, decimalPart] = priceStr.split(",");
+    let [entirePart, decimalPart] = priceStr.split(",");
 
-  let regex = /\B(?=(\d{3})+(?!\d))/g;
-  entirePart = entirePart.replace(regex, ".");
+    let regex = /\B(?=(\d{3})+(?!\d))/g;
+    entirePart = entirePart.replace(regex, ".");
 
-  priceStr = entirePart + "," + decimalPart;
+    priceStr = entirePart + "," + decimalPart;
 
-  priceStr = priceStr;
+    priceStr = priceStr;
 
-  return priceStr;
+    return priceStr;
+  }
 }
 
 export const processPrice = (inputValue: string): number => {

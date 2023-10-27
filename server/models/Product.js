@@ -3,10 +3,10 @@ const { Schema } = mongoose;
 
 const productSchema = new Schema({
   name: { type: String, required: true },
-  briefDescription: { type: String, required: true },
+  briefDescription: { type: String, required: false },
   description: { type: String, required: true },
   additionalInformation: { type: String, required: false },
-  price: { type: Number, required: true },
+  price: { type: Number, required: false },
   mainImageUrl: { type: String, required: true },
   secondaryImageUrls: [{ type: String }],
   category: { type: String, required: false },
@@ -17,6 +17,12 @@ const productSchema = new Schema({
   colors: [{ type: String, required: false }],
   sizes: [{ type: String, required: false }],
   lightTone: { type: String, required: false },
+  measurements: [
+    {
+      measure: { type: String, required: true },
+      price: { type: String, required: true },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Product", productSchema);

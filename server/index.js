@@ -125,8 +125,6 @@ app.post("/api/logout", (req, res) => {
   res.cookie("token", "").json("okay");
 });
 
-// Add product
-// En tu ruta de Express para añadir un producto
 app.post(
   "/api/add-product",
   uploadMiddleware.array("images"),
@@ -134,7 +132,6 @@ app.post(
     try {
       const {
         name,
-        price,
         description,
         category,
         stock,
@@ -142,9 +139,10 @@ app.post(
         additionalInformation,
         isOnSale,
         discount,
-        colors, // Modificado para aceptar múltiples colores
-        sizes, // Modificado para aceptar múltiples tamaños
+        colors,
+        sizes,
         lightTone,
+        measurements,
       } = req.body;
 
       const mainImageUrl = req.files[0].path;
@@ -152,8 +150,6 @@ app.post(
 
       const product = new Product({
         name,
-        price,
-        briefDescription,
         description,
         mainImageUrl,
         additionalInformation,
@@ -162,9 +158,10 @@ app.post(
         stock,
         isOnSale,
         discount,
-        colors, // Actualizado
-        sizes, // Actualizado
+        colors,
+        sizes,
         lightTone,
+        measurements,
       });
 
       await product.save();

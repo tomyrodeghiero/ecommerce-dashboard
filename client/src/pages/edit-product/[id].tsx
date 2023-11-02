@@ -36,9 +36,7 @@ const EditProductPage = () => {
   const [lightTone, setLightTone] = useState("");
   const quillRef = useRef(null);
 
-  useEffect(() => {
-    console.log(quillRef.current);
-  }, [quillRef]);
+  useEffect(() => {}, [quillRef]);
 
   // Additional state hooks for product details
   const [activeTab, setActiveTab] = useState<string>("briefDescription");
@@ -71,7 +69,6 @@ const EditProductPage = () => {
         const response = await fetch(`/api/product/${id}`);
         if (response.ok) {
           const product = await response.json();
-          console.log("product", product);
 
           // If the product has measurements, set them to the state.
           if (product.measurements && product.measurements.length > 0) {
@@ -84,7 +81,6 @@ const EditProductPage = () => {
           setAdditionalInformation(product.additionalInformation);
           setCategory(product.category);
           setMainImageUrl(product.mainImageUrl);
-          console.log("PRODUCT FETCH: ", product.mainImageUrl);
           setSecondaryImageUrls(product.secondaryImageUrls);
           setSelectedColors(product.colors);
           setLightTone(product.lightTone);
@@ -93,8 +89,6 @@ const EditProductPage = () => {
     };
 
     fetchProductDetails();
-
-    console.log("prodprce", productPrice);
   }, [id]);
 
   const handleSubmitUpdateProduct = async (e: React.FormEvent) => {
@@ -294,9 +288,9 @@ const EditProductPage = () => {
           </p>
           <div className="flex gap-5 items-center">
             <input
-              className="text-gray-800 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
+              className="text-gray-800 px-2 h-14 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
               value={productName}
-              placeholder="Lámpara Moderna"
+              placeholder="Nombre del Producto"
               onChange={(e) => setProductName(e.target.value)}
             />
 

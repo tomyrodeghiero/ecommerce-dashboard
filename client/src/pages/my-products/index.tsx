@@ -11,6 +11,7 @@ import { OPTIONS_ICON } from "src/utils/images/icons";
 import Card from "@mui/material/Card";
 
 import { styled, useTheme } from "@mui/material/styles";
+import { Button } from "@mui/material";
 
 // Styled component for the triangle shaped background image
 const TriangleImg = styled("img")({
@@ -20,12 +21,14 @@ const TriangleImg = styled("img")({
   position: "absolute",
 });
 
-const StyledCard = styled(Card)(({ theme }) => ({
+const StyledCard = styled(Card)(({ theme, isSelected }: any) => ({
+  // Asegúrate de obtener la prop aquí
   borderRadius: theme.shape.borderRadius,
   padding: theme.spacing(1),
   position: "relative",
   backgroundColor: "#ffffff",
   transition: "transform 0.3s ease-in-out",
+  boxShadow: isSelected ? "0px 0px 10px #ffca0a" : "0px 0px 10px #F4F5F7",
   "&:hover": {
     transform: "scale(1.025)",
     cursor: "pointer",
@@ -35,6 +38,18 @@ const StyledCard = styled(Card)(({ theme }) => ({
 const MyProductsPage = () => {
   const router = useRouter();
   const theme = useTheme();
+
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+  const handleProductClick = (productId: string) => {
+    setSelectedProducts((prevSelectedProducts) =>
+      prevSelectedProducts.includes(productId)
+        ? prevSelectedProducts.filter((id) => id !== productId)
+        : [...prevSelectedProducts, productId]
+    );
+
+    console.log("selected", selectedProducts);
+  };
 
   const imageSrc =
     theme.palette.mode === "light" ? "triangle-light.png" : "triangle-dark.png";
@@ -122,8 +137,105 @@ const MyProductsPage = () => {
     return 0;
   };
 
+  const [increasePercentage, setIncreasePercentage] = useState("");
+
+  const handleIncreasePrices = async () => {
+    if (selectedProducts.length === 0 || !increasePercentage) {
+      toast.error("Selecciona productos y define un porcentaje de aumento.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+
+    console.log("sec", selectedProducts);
+    console.log("increasePercentage", parseFloat(increasePercentage));
+    const response = await fetch("/api/products/price-increase", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        productIds: selectedProducts,
+        increasePercentage: parseFloat(increasePercentage),
+      }),
+    });
+
+    if (response.ok) {
+      toast.success("Los precios se han actualizado correctamente.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      // Recarga los productos para obtener los precios actualizados
+      fetchProducts();
+    } else {
+      toast.error("Hubo un error al actualizar los precios.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
+
+  const IncreasePriceSection = styled("div")(({ theme }) => ({
+    position: "fixed",
+    top: theme.spacing(2), // o puedes usar un valor fijo como '10px'
+    right: theme.spacing(5), // o puedes usar un valor fijo como '10px'
+    zIndex: 9999, // asegúrate de que esté sobre otros elementos
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    backgroundColor: "#f5f5fc", // un color de fondo claro, cambia según tu diseño
+    borderRadius: "8px", // bordes redondeados, ajusta a tu preferencia
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)", // sombra sutil, modifica como necesites
+    padding: "1rem", // espacio interior, ajusta según tu preferencia
+    width: "auto", // o un ancho específico si lo necesitas
+    maxWidth: "calc(100% - 1rem)", // para asegurar que no exceda el ancho de la ventana
+    boxSizing: "border-box", // para incluir el padding en el ancho definido
+    // Puedes agregar una transición para animar el fondo, bordes, etc.
+    transition: "all 0.3s ease",
+  }));
+
+  const handleBlur = () => {
+    if (!increasePercentage.endsWith("%")) {
+      setIncreasePercentage(increasePercentage + "%");
+    }
+  };
+
   return (
     <ApexChartWrapper>
+      <div className="flex justify-end items-center gap-4 p-4">
+        {selectedProducts.length > 0 && (
+          <>
+            <input
+              type="text"
+              value={increasePercentage}
+              onChange={(e) => setIncreasePercentage(e.target.value)}
+              placeholder="% de aumento"
+              onBlur={handleBlur}
+              className="border-2 text-center outline-1 outline-slate-400 font-semibold border-gray-300 p-2 rounded-md mb-2" // Añadido mb-2 para margen entre el input y el botón
+            />
+            <Button onClick={handleIncreasePrices} variant="contained">
+              Aumentar precios
+            </Button>
+          </>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 lg:py-8">
         {loadingProducts
           ? Array.from({ length: 8 }).map((_, idx) => (
@@ -142,7 +254,8 @@ const MyProductsPage = () => {
               <StyledCard
                 className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
                 key={product._id}
-                onClick={() => handleEdit(product._id)}
+                onClick={() => handleProductClick(product._id)}
+                isSelected={selectedProducts.includes(product._id)}
               >
                 <img
                   src={OPTIONS_ICON}

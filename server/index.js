@@ -397,6 +397,78 @@ app.post("/api/product-completion", async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+// Utiliza la función formatPriceARS para formatear los precios
+function formatPriceARS(price) {
+  if (typeof price === "number") {
+    let priceStr = price.toFixed(2).replace(".", ",");
+    let [entirePart, decimalPart] = priceStr.split(",");
+    let regex = /\B(?=(\d{3})+(?!\d))/g;
+    entirePart = entirePart.replace(regex, ".");
+    priceStr = entirePart + "," + decimalPart;
+    return priceStr;
+  }
+  return price; // Retorna el precio sin cambios si no es un número
+}
+
+// PATCH prices of selected products by a percentage
+app.patch("/api/products/price-increase", async (req, res) => {
+  try {
+    const { productIds, increasePercentage } = req.body;
+
+    if (!productIds || increasePercentage === undefined) {
+      return res
+        .status(400)
+        .json({ message: "Product IDs and increase percentage are required." });
+    }
+
+    const increaseFactor = 1 + Number(increasePercentage) / 100;
+
+    if (isNaN(increaseFactor)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid increase percentage value." });
+    }
+
+    const updatePromises = productIds.map((productId) => {
+      return Product.findById(productId).then((product) => {
+        if (product) {
+          // Actualiza el precio en el nivel superior si existe y es un número
+          if (typeof product.price === "number") {
+            product.price = formatPriceARS(product.price * increaseFactor);
+          }
+
+          // Actualiza los precios dentro de measurements
+          product.measurements.forEach((measurement) => {
+            if (measurement.price) {
+              let formattedPrice = measurement.price
+                .replace(/\./g, "")
+                .replace(/,/g, ".");
+              if (!isNaN(formattedPrice)) {
+                let measurementPrice = parseFloat(formattedPrice);
+                measurement.price = formatPriceARS(
+                  measurementPrice * increaseFactor
+                );
+              }
+            }
+          });
+
+          return product.save();
+        } else {
+          return Promise.reject(
+            new Error(`Product with ID: ${productId} not found`)
+          );
+        }
+      });
+    });
+
+    await Promise.all(updatePromises);
+
+    res.status(200).json({ message: "Products prices updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
 
 // Listen port
 app.listen(5001);

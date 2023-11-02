@@ -37,9 +37,7 @@ const AddProductPage = () => {
   const quillRef = useRef(null);
 
   // Effect for logging the Quill instance on mount
-  useEffect(() => {
-    console.log(quillRef.current);
-  }, []);
+  useEffect(() => {}, []);
 
   // More state hooks for UI control and product details
   const [activeTab, setActiveTab] = useState("briefDescription");
@@ -271,7 +269,7 @@ const AddProductPage = () => {
           </p>
           <div className="flex gap-5 items-center">
             <input
-              className="text-gray-800 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
+              className="text-gray-800 px-2 h-14 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
               value={productName}
               placeholder="Nombre del Producto"
               onChange={(e) => setProductName(e.target.value)}

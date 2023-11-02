@@ -1,9 +1,9 @@
 import "react-toastify/dist/ReactToastify.css";
-
 import React, { useEffect, useRef, useState } from "react";
 import {
   Checkbox,
   FormControl,
+  Input,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -14,80 +14,52 @@ import { toast, ToastContainer } from "react-toastify";
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
 import Button from "@mui/material/Button";
-import { CATEGORIES } from "src/utils/constants";
+import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
 import { useRouter } from "next/router";
-import { formatPriceARS, processPrice } from "src/utils/functions";
+import {
+  addBreaksAfterPeriods,
+  formatPriceARS,
+  processPrice,
+} from "src/utils/functions";
 
-const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "color",
-];
-
-const colors = [
-  { name: "Rojo Suave", hex: "#FF6F6F" },
-  { name: "Verde Menta", hex: "#98FB98" },
-  { name: "Azul Cielo", hex: "#87CEEB" },
-  { name: "Amarillo Claro", hex: "#FFFACD" },
-  { name: "Blanco", hex: "#F5F5F5" },
-  { name: "Melocotón", hex: "#FFE5B4" },
-  { name: "Aqua", hex: "#B0E0E6" },
-  { name: "Rosado", hex: "#FFC0CB" },
-];
-
-const sizes = ["Pequeño", "Mediano", "Grande", "Extra Grande"];
-const lightTones = ["Cálido", "Neutro", "Frío", "Luz del Día", "Anochecer"];
-
+// Import the editor component dynamically
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const EditProductPage = () => {
   const router = useRouter();
-  const { id } = router.query; // Obtiene el ID desde la URL.
+  const { id } = router.query; // Get the ID from the URL.
 
+  // Product state hooks
   const [productName, setProductName] = useState<string>("");
   const [productPrice, setProductPrice] = useState<number | null>(null);
-  const [formattedProductPrice, setFormattedProductPrice] =
-    useState<string>("");
-  const [productPriceInput, setProductPriceInput] = useState<string>("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [lightTone, setLightTone] = useState("");
-
   const quillRef = useRef(null);
 
   useEffect(() => {
     console.log(quillRef.current);
   }, [quillRef]);
 
+  // Additional state hooks for product details
   const [activeTab, setActiveTab] = useState<string>("briefDescription");
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<File | null>(null);
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [secondaryImageUrls, setSecondaryImageUrls] = useState<File[]>([]);
-
   const [productBriefDescription, setProductBriefDescription] = useState("");
-  const [additionalInformation, setAdditionalInformation] = useState("");
   const [category, setCategory] = useState("");
-  const [isOnSale, setIsOnSale] = useState(false);
-  const [discount, setDiscount] = useState(0);
   const [productStock, setProductStock] = useState<any>(1);
+  const [additionalInformation, setAdditionalInformation] =
+    useState("briefDescription");
+  const [measurements, setMeasurements] = useState([
+    { measure: "", price: "" },
+  ]);
 
+  // Handle the change of the main image
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setMainImageFile(event.target.files[0]);
-      // If you want to show a preview of the selected image, you can also update mainImageUrl:
       const imageUrl: any = URL.createObjectURL(event.target.files[0]);
       setMainImageUrl(imageUrl);
     }
@@ -99,24 +71,31 @@ const EditProductPage = () => {
         const response = await fetch(`/api/product/${id}`);
         if (response.ok) {
           const product = await response.json();
-          // Asigna los datos del producto a los estados respectivos.
+          console.log("product", product);
+
+          // If the product has measurements, set them to the state.
+          if (product.measurements && product.measurements.length > 0) {
+            setMeasurements(product.measurements);
+          }
+          // Assign the product data to the respective states.
           setProductName(product.name);
           setProductPrice(product.price);
-          setProductPriceInput(formatPriceARS(product.price));
           setProductDescription(product.description);
-          setProductBriefDescription(product.briefDescription);
+          setAdditionalInformation(product.additionalInformation);
           setCategory(product.category);
           setMainImageUrl(product.mainImageUrl);
+          console.log("PRODUCT FETCH: ", product.mainImageUrl);
           setSecondaryImageUrls(product.secondaryImageUrls);
           setSelectedColors(product.colors);
-          setSelectedSizes(product.sizes);
           setLightTone(product.lightTone);
         }
       }
     };
 
     fetchProductDetails();
-  }, [id]); // El useEffect se ejecutará cada vez que 'id' cambie.
+
+    console.log("prodprce", productPrice);
+  }, [id]);
 
   const handleSubmitUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,11 +105,7 @@ const EditProductPage = () => {
       return showErrorMessage("El nombre del producto está vacío");
     }
 
-    if (!productPrice) {
-      return showErrorMessage("El precio del producto no está especificado");
-    }
-
-    if (!productBriefDescription) {
+    if (!additionalInformation) {
       return showErrorMessage("La descripción breve del producto está vacía");
     }
 
@@ -148,28 +123,41 @@ const EditProductPage = () => {
       );
     }
 
+    if (
+      measurements.some(
+        (measurement) => !measurement.measure || !measurement.price
+      )
+    ) {
+      return showErrorMessage(
+        "Ensure all measurements have both measure and price filled"
+      );
+    }
+
+    // Preparing data to send to the server
     const formData = new FormData();
     formData.append("name", productName);
-    formData.append("price", productPrice.toString());
-    formData.append("briefDescription", productBriefDescription);
-    formData.append("description", productDescription);
     formData.append("additionalInformation", additionalInformation);
+    formData.append("description", productDescription);
     formData.append("category", category);
-    formData.append("isOnSale", JSON.stringify(isOnSale));
-    formData.append("discount", discount.toString());
-    formData.append("stock", productStock.toString());
+    formData.append("stock", String(productStock)); // Ensure stock is a string
+    measurements.forEach((measurement, index) => {
+      formData.append(`measurements[${index}][measure]`, measurement.measure);
+      formData.append(`measurements[${index}][price]`, measurement.price);
+    });
 
-    if (mainImageFile) {
-      formData.append("images", mainImageFile, mainImageFile.name);
-    }
-    // else if you want to send the existing image URL back to the server:
-    else if (mainImageUrl) {
+    selectedColors.forEach((color) => {
+      formData.append("colors", color);
+    });
+
+    formData.append("lightTone", lightTone);
+
+    if (mainImageUrl) {
       formData.append("mainImageUrl", mainImageUrl);
     }
 
-    secondaryImageUrls.forEach((image: any, index: number) => {
-      formData.append("images", image, `secondary-image-${index}`);
-    });
+    // previewImages.forEach((image:any, index:number) => {
+    //   formData.append("images", image, `secondary-image-${index}`);
+    // });
 
     const response = await fetch(`/api/edit-product/${id}`, {
       method: "PUT",
@@ -177,15 +165,6 @@ const EditProductPage = () => {
     });
 
     if (response.ok) {
-      setProductName("");
-      setProductPrice(0);
-      setProductDescription("");
-      setProductPriceInput("");
-      setProductBriefDescription("");
-      setCategory(""); // Limpia la categoría
-      setMainImageUrl(null); // Limpia la imagen principal
-      setSecondaryImageUrls([]); // Limpia las imágenes de vista previa
-
       toast.success("El producto ha sido actualizado correctamente.", {
         position: "top-center",
         autoClose: 5000,
@@ -197,7 +176,16 @@ const EditProductPage = () => {
         theme: "light",
       });
     } else {
-      alert("Failed to add product");
+      toast.error("El producto no se ha podido ser actualizado.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   };
 
@@ -214,10 +202,6 @@ const EditProductPage = () => {
       theme: "light",
     });
   }
-
-  const addBreaksAfterPeriods = (text: string): string => {
-    return text.replace(/\./g, ".<br>");
-  };
 
   const handleSecondaryImagesChange = (e: any, index: number) => {
     let newPreviewImages = [...secondaryImageUrls];
@@ -245,11 +229,9 @@ const EditProductPage = () => {
 
       if (response.ok) {
         const responseData = await response.text();
-        console.log("response.data -> ", responseData);
-        console.log("newlines.data -> ", addBreaksAfterPeriods(responseData));
 
         additional
-          ? setProductBriefDescription(addBreaksAfterPeriods(responseData))
+          ? setAdditionalInformation(addBreaksAfterPeriods(responseData))
           : setProductDescription(addBreaksAfterPeriods(responseData));
       } else {
         throw new Error("Error with product completion API");
@@ -262,6 +244,21 @@ const EditProductPage = () => {
     }
   };
 
+  const handleMeasurementChange = (
+    index: number,
+    field: "measure" | "price",
+    value: string
+  ) => {
+    const newMeasurements = [...measurements];
+    newMeasurements[index][field] = value;
+    setMeasurements(newMeasurements);
+  };
+
+  const addMeasurementField = () => {
+    setMeasurements((prev) => [...prev, { measure: "", price: "" }]);
+  };
+
+  // Custom hook for the DescriptionEditor component
   const DescriptionEditor = React.useCallback(
     ({ value, onChange, generateDescription, loading }: any) => {
       return (
@@ -280,7 +277,7 @@ const EditProductPage = () => {
             ref={quillRef}
             value={addBreaksAfterPeriods(value)}
             onChange={onChange}
-            formats={formats}
+            formats={FORMATS}
           />
         </div>
       );
@@ -295,37 +292,13 @@ const EditProductPage = () => {
           <p className="uppercase font-medium text-sm text-gray-500">
             🛍️ Mi E-commerce
           </p>
-          <input
-            className="text-gray-800 bg-gray-200 mt-1 text-4xl w-full font-medium"
-            value={productName}
-            placeholder="Lámpara Moderna"
-            onChange={(e) => setProductName(e.target.value)}
-          />
-
-          <div className="flex justify-between items-center mt-2 w-full">
-            <div className="flex items-center">
-              <span className="text-gray-700 text-2xl font-medium">$</span>
-              <input
-                className="text-gray-700 bg-gray-200 ml-2 w-2/5 text-2xl font-medium"
-                value={productPriceInput}
-                placeholder="1.200,00"
-                type="text"
-                onChange={(e: any) => {
-                  // Permitir números y puntos
-                  const onlyNumbersAndDots = e.target.value.replace(
-                    /[^0-9.]/g,
-                    ""
-                  );
-                  setProductPriceInput(onlyNumbersAndDots);
-                  setProductPrice(processPrice(onlyNumbersAndDots));
-                }}
-                onBlur={() => {
-                  if (productPrice !== null) {
-                    setProductPriceInput(formatPriceARS(productPrice));
-                  }
-                }}
-              />
-            </div>
+          <div className="flex gap-5 items-center">
+            <input
+              className="text-gray-800 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
+              value={productName}
+              placeholder="Lámpara Moderna"
+              onChange={(e) => setProductName(e.target.value)}
+            />
 
             <div className="flex items-center space-x-2">
               <span className="text-gray-600">🧮 Stock:</span>
@@ -336,6 +309,61 @@ const EditProductPage = () => {
                 type="number"
                 onChange={(e: any) => setProductStock(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-2 w-full">
+            <div className="mt-4">
+              {measurements.map((measurement, index) => (
+                <div key={index} className="flex items-center gap-4 mb-2">
+                  <Input
+                    type="text"
+                    value={measurement.measure}
+                    onChange={(e) =>
+                      handleMeasurementChange(index, "measure", e.target.value)
+                    }
+                    placeholder="Medida"
+                    className="p-2 border rounded w-1/3"
+                  />
+                  <div className="flex items-center">
+                    <span className="text-gray-700 text-xl font-medium mr-2">
+                      $
+                    </span>
+                    <Input
+                      type="text"
+                      value={measurement.price}
+                      placeholder="Precio"
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        const filteredValue = inputValue.replace(
+                          /[^0-9.]/g,
+                          ""
+                        );
+                        handleMeasurementChange(index, "price", filteredValue);
+                      }}
+                      onBlur={() => {
+                        if (measurement.price) {
+                          handleMeasurementChange(
+                            index,
+                            "price",
+                            formatPriceARS(processPrice(measurement.price))
+                          );
+                        }
+                      }}
+                      className="p-2 border rounded w-40" // added some styling
+                    />
+                  </div>
+                  {index === measurements.length - 1 && (
+                    <button
+                      onClick={addMeasurementField}
+                      className="ml-4 flex items-center justify-center bg-blue-600 text-white h-8 w-8 rounded-full hover:bg-blue-700 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+                      aria-label="Agregar Medida/Precio"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -355,7 +383,7 @@ const EditProductPage = () => {
               </Select>
             </FormControl>
 
-            <div className="mt-5 grid grid-cols-3 gap-4">
+            <div className="mt-5 grid grid-cols-2 gap-4">
               <FormControl variant="outlined" fullWidth>
                 <InputLabel id="colors-label">Colores</InputLabel>
                 <Select
@@ -363,20 +391,18 @@ const EditProductPage = () => {
                   id="colors"
                   multiple
                   value={selectedColors}
-                  onChange={(e) =>
-                    setSelectedColors(e.target.value as string[])
-                  }
+                  onChange={(e: any) => setSelectedColors(e.target.value)}
                   label="Colores"
                   renderValue={(selected) =>
                     (selected as string[])
                       .map((colorHex) => {
-                        const color = colors.find((c) => c.hex === colorHex);
+                        const color = COLORS.find((c) => c.hex === colorHex);
                         return color ? color.name : "";
                       })
                       .join(", ")
                   }
                 >
-                  {colors.map((colorOption: string, index: number) => (
+                  {COLORS.map((colorOption, index) => (
                     <MenuItem key={index} value={colorOption.hex}>
                       <Checkbox
                         checked={selectedColors.includes(colorOption.hex)}
@@ -398,33 +424,13 @@ const EditProductPage = () => {
               </FormControl>
 
               <FormControl variant="outlined" fullWidth>
-                <InputLabel id="sizes-label">Tamaños</InputLabel>
-                <Select
-                  labelId="sizes-label"
-                  id="sizes"
-                  multiple
-                  value={selectedSizes}
-                  onChange={(e) => setSelectedSizes(e.target.value as string[])}
-                  label="Tamaños"
-                  renderValue={(selected) => (selected as string[]).join(", ")}
-                >
-                  {sizes.map((size: string, index: number) => (
-                    <MenuItem key={index} value={size}>
-                      <Checkbox checked={selectedSizes.includes(size)} />
-                      <ListItemText primary={size} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl variant="outlined" fullWidth>
                 <InputLabel>Tono de Luz</InputLabel>
                 <Select
                   value={lightTone}
                   onChange={(e) => setLightTone(e.target.value)}
                   label="Tono de Luz"
                 >
-                  {lightTones.map((lightToneOption: string, index: number) => (
+                  {LIGHT_TONES.map((lightToneOption, index) => (
                     <MenuItem key={index} value={lightToneOption}>
                       {lightToneOption}
                     </MenuItem>
@@ -469,8 +475,8 @@ const EditProductPage = () => {
           )}
           {activeTab === "briefDescription" && (
             <DescriptionEditor
-              value={productBriefDescription}
-              onChange={setProductBriefDescription}
+              value={additionalInformation}
+              onChange={setAdditionalInformation}
               generateDescription={() =>
                 generateProductDescription(productName, true)
               }
@@ -528,12 +534,7 @@ const EditProductPage = () => {
               type="file"
               onChange={(e: any) => {
                 if (e.target.files.length > 0) {
-                  // Set the File object for future submission
-                  setMainImageFile(e.target.files[0]);
-
-                  // If you want to show a preview of the selected image:
-                  const imageUrl: any = URL.createObjectURL(e.target.files[0]);
-                  setMainImageUrl(imageUrl);
+                  setMainImageUrl(e.target.files[0]);
                 }
               }}
               required

@@ -42,3 +42,9 @@ export const removeEnLangPrefix = (path: string): string => {
   }
   return path;
 };
+
+// A function to add breaks after periods for better text formatting
+export const addBreaksAfterPeriods = (text: string) => {
+  if (!text) return ""; // Retorna un string vacío si el texto no está definido
+  return text.replace(/\./g, ".<br>");
+};

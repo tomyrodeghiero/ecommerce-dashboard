@@ -107,7 +107,7 @@ const MyProductsPage = () => {
   }, []);
 
   const handleEdit = (productId: string) => {
-    // router.push(`/edit-product/${productId}`);
+    router.push(`/edit-product/${productId}`);
   };
 
   const extractPrice = (product: any) => {
@@ -159,7 +159,7 @@ const MyProductsPage = () => {
                     ref={dropdownRef}
                     className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
                   >
-                    {/* <div
+                    <div
                       onClick={(event) => {
                         event.stopPropagation();
                         handleEdit(product._id);
@@ -167,7 +167,7 @@ const MyProductsPage = () => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
                     >
                       Editar
-                    </div> */}
+                    </div>
                     <div
                       onClick={(event) => {
                         event.stopPropagation();

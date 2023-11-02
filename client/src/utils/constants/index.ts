@@ -25,5 +25,42 @@ export const CATEGORIES = [
   "Iluminación de Oficina",
   "Iluminación de Tiendas",
   "Iluminación Industrial",
-  "Iluminación Solar"
+  "Iluminación Solar",
+];
+
+export const COLORS = [
+  { name: "Blanco", hex: "#F5F5F5" },
+  { name: "Negro", hex: "#000000" },
+  { name: "Platil", hex: "#E5E4E2" },
+  { name: "Bronce", hex: "#CD7F32" },
+  { name: "Cobre", hex: "#B87333" },
+  { name: "Gris", hex: "#808080" },
+  { name: "Madera", hex: "#8B4513" },
+];
+
+export const SIZES = ["Pequeño", "Mediano", "Grande", "Extra Grande"];
+export const LIGHT_TONES = [
+  "Cálido",
+  "Neutro",
+  "Frío",
+  "Luz del Día",
+  "Anochecer",
+];
+
+// Formats supported by ReactQuill editor
+export const FORMATS = [
+  "header",
+  "font",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "list",
+  "bullet",
+  "indent",
+  "link",
+  "image",
+  "color",
 ];

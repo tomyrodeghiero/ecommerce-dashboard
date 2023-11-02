@@ -1,5 +1,3 @@
-import "react-toastify/dist/ReactToastify.css";
-
 import React, { useEffect, useRef, useState } from "react";
 import {
   Checkbox,
@@ -9,90 +7,78 @@ import {
   ListItemText,
   MenuItem,
   Select,
+  Button,
 } from "@mui/material";
 import dynamic from "next/dynamic";
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Importing necessary utility functions and constants
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
-import Button from "@mui/material/Button";
-import { CATEGORIES } from "src/utils/constants";
-import { formatPriceARS, processPrice } from "src/utils/functions";
+import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
+import {
+  addBreaksAfterPeriods,
+  formatPriceARS,
+  processPrice,
+} from "src/utils/functions";
 
-const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "color",
-];
-
+// Lazy-load ReactQuill for better performance and to avoid SSR issues
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
+// AddProductPage component definition
 const AddProductPage = () => {
-  const [productName, setProductName] = useState<string>("");
-
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  // State hooks for managing product information
+  const [productName, setProductName] = useState("");
+  const [selectedColors, setSelectedColors] = useState([]);
   const [lightTone, setLightTone] = useState("");
 
-  const addBreaksAfterPeriods = (text: string): string => {
-    return text.replace(/\./g, ".<br>");
-  };
-
-  const colors = [
-    { name: "Blanco", hex: "#F5F5F5" },
-    { name: "Negro", hex: "#000000" },
-    { name: "Platín", hex: "#E5E4E2" },
-    { name: "Bronce", hex: "#CD7F32" },
-    { name: "Cobre", hex: "#B87333" },
-    { name: "Gris", hex: "#808080" },
-    { name: "Madera", hex: "#8B4513" },
-  ];
-
-  const sizes = ["Pequeño", "Mediano", "Grande", "Extra Grande"];
-  const lightTones = ["Cálido", "Neutro", "Frío", "Luz del Día", "Anochecer"];
-
+  // Ref hook for accessing ReactQuill instance directly
   const quillRef = useRef(null);
 
+  // Effect for logging the Quill instance on mount
   useEffect(() => {
     console.log(quillRef.current);
-  }, [quillRef]);
+  }, []);
 
-  const [activeTab, setActiveTab] = useState<string>("briefDescription");
+  // More state hooks for UI control and product details
+  const [activeTab, setActiveTab] = useState("briefDescription");
+  const [additionalInformation, setAdditionalInformation] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mainImageUrl, setMainImageUrl] = useState<File | null>(null);
-  const [previewImages, setPreviewImages] = useState<File[]>([]);
+  const [mainImageUrl, setMainImageUrl] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
   const [measurements, setMeasurements] = useState([
     { measure: "", price: "" },
   ]);
 
-  const [productBriefDescription, setProductBriefDescription] = useState("");
-  const [additionalInformation, setAdditionalInformation] = useState("");
   const [category, setCategory] = useState("");
-  const [isOnSale, setIsOnSale] = useState(false);
-  const [discount, setDiscount] = useState(0);
-  const [productStock, setProductStock] = useState<any>(1);
+  const [productStock, setProductStock] = useState(1);
 
-  const handleSubmitProduct = async (e: React.FormEvent) => {
+  // Function for showing error messages using react-toastify
+  const showErrorMessage = (message: string) => {
+    toast.error(message, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+
+  // Handler for submitting the product form
+  const handleSubmitProduct = async (e: any) => {
     e.preventDefault();
-    console.log("productbr", productBriefDescription);
 
     // Validación de campos
     if (!productName) {
       return showErrorMessage("El nombre del producto está vacío");
     }
 
-    if (!productBriefDescription) {
+    if (!additionalInformation) {
       return showErrorMessage("La descripción breve del producto está vacía");
     }
 
@@ -120,15 +106,13 @@ const AddProductPage = () => {
       );
     }
 
+    // Preparing data to send to the server
     const formData = new FormData();
     formData.append("name", productName);
-    formData.append("briefDescription", productBriefDescription);
-    formData.append("description", productDescription);
     formData.append("additionalInformation", additionalInformation);
+    formData.append("description", productDescription);
     formData.append("category", category);
-    formData.append("isOnSale", JSON.stringify(isOnSale));
-    formData.append("discount", discount.toString());
-    formData.append("stock", productStock);
+    formData.append("stock", String(productStock)); // Ensure stock is a string
     measurements.forEach((measurement, index) => {
       formData.append(`measurements[${index}][measure]`, measurement.measure);
       formData.append(`measurements[${index}][price]`, measurement.price);
@@ -138,77 +122,80 @@ const AddProductPage = () => {
       formData.append("colors", color);
     });
 
-    selectedSizes.forEach((size) => {
-      formData.append("sizes", size);
-    });
-
     formData.append("lightTone", lightTone);
 
     if (mainImageUrl) {
       formData.append("images", mainImageUrl, mainImageUrl.name);
     }
 
-    previewImages.forEach((image: any, index: number) => {
+    previewImages.forEach((image, index) => {
       formData.append("images", image, `secondary-image-${index}`);
     });
 
-    const response = await fetch("/api/add-product", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (response.ok) {
-      setProductName("");
-      setMeasurements([{ measure: "", price: "" }]);
-      setProductDescription("");
-      setProductBriefDescription("");
-      setCategory(""); // Limpia la categoría
-      setMainImageUrl(null); // Limpia la imagen principal
-      setPreviewImages([]); // Limpia las imágenes de vista previa
-
-      toast.success("El producto ha sido añadido.", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+    try {
+      const response = await fetch("/api/add-product", {
+        method: "POST",
+        body: formData,
       });
-    } else {
-      alert("Failed to add product");
+
+      // Handling the response from the server
+      if (response.ok) {
+        // Clearing the form after successful submission
+        setProductName("");
+        setMeasurements([{ measure: "", price: "" }]);
+        setProductDescription("");
+        setAdditionalInformation("");
+        setCategory("");
+        setMainImageUrl(null);
+        setPreviewImages([]);
+
+        toast.success("El producto ha sido añadido.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      } else {
+        toast.error("El producto no se ha podido ser añadido.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error while adding product");
     }
   };
 
-  // Mostrar un toast de error con el mensaje específico
-  function showErrorMessage(message: string) {
-    toast.error(message, {
-      position: "top-center",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-    });
-  }
-
+  // Function for handling changes in secondary images
   const handleSecondaryImagesChange = (e: any, index: number) => {
-    let newPreviewImages = [...previewImages];
-    newPreviewImages[index] = e.target.files[0];
-    setPreviewImages(newPreviewImages);
+    const newFile = e.target.files[0];
+    setPreviewImages((prevImages: any) =>
+      prevImages.map((img: any, index: number) =>
+        index === index ? newFile : img
+      )
+    );
   };
 
+  // Function for generating product descriptions
   const generateProductDescription = async (
-    product: string,
-    additional: boolean = false
+    product: any,
+    additional = false
   ) => {
     setIsLoading(true);
-    const prompt = !additional
-      ? `Genera una descripción detallada para el producto ${product}, destacando todas sus características y beneficios.`
-      : `Genera una muy breve introducción para el producto ${product}, resaltando sus puntos clave.`;
+    const prompt = additional
+      ? `Create a very brief introduction for the product ${product}, highlighting its key points.`
+      : `Generate a detailed description for the product ${product}, highlighting all its features and benefits.`;
 
     try {
       const response = await fetch("/api/product-completion", {
@@ -219,25 +206,22 @@ const AddProductPage = () => {
         body: JSON.stringify({ content: prompt }),
       });
 
-      if (response.ok) {
-        const responseData = await response.text();
-        console.log("response.data -> ", responseData);
-        console.log("newlines.data -> ", addBreaksAfterPeriods(responseData));
+      if (!response.ok) throw new Error("Error with product completion API");
 
-        additional
-          ? setProductBriefDescription(addBreaksAfterPeriods(responseData))
-          : setProductDescription(addBreaksAfterPeriods(responseData));
-      } else {
-        throw new Error("Error with product completion API");
-      }
+      const responseData = await response.text();
+      const formattedResponse = addBreaksAfterPeriods(responseData);
+      additional
+        ? setAdditionalInformation(formattedResponse)
+        : setProductDescription(formattedResponse);
     } catch (error) {
       console.error(error);
-      alert("error");
+      alert("Error during description generation");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Custom hook for the DescriptionEditor component
   const DescriptionEditor = React.useCallback(
     ({ value, onChange, generateDescription, loading }: any) => {
       return (
@@ -256,7 +240,7 @@ const AddProductPage = () => {
             ref={quillRef}
             value={addBreaksAfterPeriods(value)}
             onChange={onChange}
-            formats={formats}
+            formats={FORMATS}
           />
         </div>
       );
@@ -289,7 +273,7 @@ const AddProductPage = () => {
             <input
               className="text-gray-800 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
               value={productName}
-              placeholder="Lámpara Moderna"
+              placeholder="Nombre del Producto"
               onChange={(e) => setProductName(e.target.value)}
             />
 
@@ -384,20 +368,18 @@ const AddProductPage = () => {
                   id="colors"
                   multiple
                   value={selectedColors}
-                  onChange={(e) =>
-                    setSelectedColors(e.target.value as string[])
-                  }
+                  onChange={(e: any) => setSelectedColors(e.target.value)}
                   label="Colores"
                   renderValue={(selected) =>
                     (selected as string[])
                       .map((colorHex) => {
-                        const color = colors.find((c) => c.hex === colorHex);
+                        const color = COLORS.find((c) => c.hex === colorHex);
                         return color ? color.name : "";
                       })
                       .join(", ")
                   }
                 >
-                  {colors.map((colorOption, index) => (
+                  {COLORS.map((colorOption, index) => (
                     <MenuItem key={index} value={colorOption.hex}>
                       <Checkbox
                         checked={selectedColors.includes(colorOption.hex)}
@@ -425,7 +407,7 @@ const AddProductPage = () => {
                   onChange={(e) => setLightTone(e.target.value)}
                   label="Tono de Luz"
                 >
-                  {lightTones.map((lightToneOption, index) => (
+                  {LIGHT_TONES.map((lightToneOption, index) => (
                     <MenuItem key={index} value={lightToneOption}>
                       {lightToneOption}
                     </MenuItem>
@@ -461,6 +443,7 @@ const AddProductPage = () => {
           {activeTab === "description" && (
             <DescriptionEditor
               value={productDescription}
+              quillRef={quillRef}
               onChange={setProductDescription}
               generateDescription={() =>
                 generateProductDescription(productName)
@@ -470,8 +453,8 @@ const AddProductPage = () => {
           )}
           {activeTab === "briefDescription" && (
             <DescriptionEditor
-              value={productBriefDescription}
-              onChange={setProductBriefDescription}
+              value={additionalInformation}
+              onChange={setAdditionalInformation}
               generateDescription={() =>
                 generateProductDescription(productName, true)
               }

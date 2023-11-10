@@ -33,6 +33,11 @@ const navigation = (): VerticalNavItemsType => {
       icon: AccountPlusOutline,
       path: "/add-product",
     },
+    {
+      title: "Mis Colores",
+      icon: FormatLetterCase,
+      path: "/my-colors",
+    },
     // {
     //   sectionTitle: "Pages",
     // },

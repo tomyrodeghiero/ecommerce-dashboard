@@ -1,17 +1,17 @@
 export function formatPriceARS(price: any): any {
   if (typeof price === "number") {
-    let priceStr = price.toFixed(2).replace(".", ",");
+    let priceFormatted = price.toFixed(2).replace(".", ",");
 
-    let [entirePart, decimalPart] = priceStr.split(",");
+    let [entirePart, decimalPart] = priceFormatted.split(",");
 
     let regex = /\B(?=(\d{3})+(?!\d))/g;
     entirePart = entirePart.replace(regex, ".");
 
-    priceStr = entirePart + "," + decimalPart;
+    priceFormatted = entirePart + "," + decimalPart;
 
-    priceStr = priceStr;
+    priceFormatted = priceFormatted;
 
-    return priceStr;
+    return priceFormatted;
   }
 }
 

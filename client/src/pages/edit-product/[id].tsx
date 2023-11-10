@@ -16,11 +16,7 @@ import LoadingSpinner from "src/@core/components/loading-spinner";
 import Button from "@mui/material/Button";
 import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
 import { useRouter } from "next/router";
-import {
-  addBreaksAfterPeriods,
-  formatPriceARS,
-  processPrice,
-} from "src/utils/functions";
+import { addBreaksAfterPeriods } from "src/utils/functions";
 
 // Import the editor component dynamically
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -34,6 +30,8 @@ const EditProductPage = () => {
   const [productPrice, setProductPrice] = useState<number | null>(null);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [lightTone, setLightTone] = useState("");
+  const [previewImages, setPreviewImages] = useState([]);
+
   const quillRef = useRef(null);
 
   useEffect(() => {}, [quillRef]);
@@ -42,24 +40,21 @@ const EditProductPage = () => {
   const [activeTab, setActiveTab] = useState<string>("briefDescription");
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mainImageUrl, setMainImageUrl] = useState<File | null>(null);
+  const [mainImageUrl, setMainImageUrl] = useState<any | null>(null);
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
-  const [secondaryImageUrls, setSecondaryImageUrls] = useState<File[]>([]);
+  const [secondaryImageUrls, setSecondaryImageUrls] = useState<string[]>([]);
   const [productBriefDescription, setProductBriefDescription] = useState("");
   const [category, setCategory] = useState("");
   const [productStock, setProductStock] = useState<any>(1);
   const [additionalInformation, setAdditionalInformation] =
     useState("briefDescription");
-  const [measurements, setMeasurements] = useState([
-    { measure: "", price: "" },
-  ]);
+  const [measurements, setMeasurements] = useState([{ measure: "", price: 0 }]);
 
   // Handle the change of the main image
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMainImageChange = (event: any) => {
     if (event.target.files && event.target.files[0]) {
       setMainImageFile(event.target.files[0]);
-      const imageUrl: any = URL.createObjectURL(event.target.files[0]);
-      setMainImageUrl(imageUrl);
+      setMainImageUrl(URL.createObjectURL(event.target.files[0]));
     }
   };
 
@@ -136,7 +131,10 @@ const EditProductPage = () => {
     formData.append("stock", String(productStock)); // Ensure stock is a string
     measurements.forEach((measurement, index) => {
       formData.append(`measurements[${index}][measure]`, measurement.measure);
-      formData.append(`measurements[${index}][price]`, measurement.price);
+      formData.append(
+        `measurements[${index}][price]`,
+        measurement.price.toString()
+      );
     });
 
     selectedColors.forEach((color) => {
@@ -197,10 +195,22 @@ const EditProductPage = () => {
     });
   }
 
-  const handleSecondaryImagesChange = (e: any, index: number) => {
-    let newPreviewImages = [...secondaryImageUrls];
-    newPreviewImages[index] = e.target.files[0];
-    setSecondaryImageUrls(newPreviewImages);
+  // Función para manejar el cambio en las imágenes secundarias
+  const handleSecondaryImageChange = (event: any, index: number) => {
+    const newFile = event.target.files[0];
+    if (newFile) {
+      const newFileUrl = URL.createObjectURL(newFile);
+      setSecondaryImageUrls((prevImages) => {
+        const updatedImages = [...prevImages];
+        updatedImages[index] = newFileUrl;
+        return updatedImages;
+      });
+    }
+  };
+
+  // Función para agregar una nueva imagen secundaria
+  const addNewSecondaryImage = () => {
+    setSecondaryImageUrls((prevImages: any) => [...prevImages, null]);
   };
 
   const generateProductDescription = async (
@@ -238,18 +248,20 @@ const EditProductPage = () => {
     }
   };
 
-  const handleMeasurementChange = (
-    index: number,
-    field: "measure" | "price",
-    value: string
-  ) => {
-    const newMeasurements = [...measurements];
-    newMeasurements[index][field] = value;
-    setMeasurements(newMeasurements);
+  const handleMeasurementChange = (index: number, field: any, value: any) => {
+    const updatedMeasurements = measurements.map((measurement, i) =>
+      i === index ? { ...measurement, [field]: value } : measurement
+    );
+
+    if (field === "price") {
+      updatedMeasurements[index].price = parseFloat(value) || 0;
+    }
+
+    setMeasurements(updatedMeasurements);
   };
 
   const addMeasurementField = () => {
-    setMeasurements((prev) => [...prev, { measure: "", price: "" }]);
+    setMeasurements((prev: any) => [...prev, { measure: "", price: 0 }]);
   };
 
   // Custom hook for the DescriptionEditor component
@@ -329,22 +341,9 @@ const EditProductPage = () => {
                       placeholder="Precio"
                       onChange={(e) => {
                         const inputValue = e.target.value;
-                        const filteredValue = inputValue.replace(
-                          /[^0-9.]/g,
-                          ""
-                        );
-                        handleMeasurementChange(index, "price", filteredValue);
+                        handleMeasurementChange(index, "price", inputValue);
                       }}
-                      onBlur={() => {
-                        if (measurement.price) {
-                          handleMeasurementChange(
-                            index,
-                            "price",
-                            formatPriceARS(processPrice(measurement.price))
-                          );
-                        }
-                      }}
-                      className="p-2 border rounded w-40" // added some styling
+                      className="p-2 border rounded w-40"
                     />
                   </div>
                   {index === measurements.length - 1 && (
@@ -498,106 +497,79 @@ const EditProductPage = () => {
           </div>
 
           <label
-            htmlFor="productImage"
+            htmlFor="productMainImage"
             className="w-full h-96 rounded border-2 mt-5 border-dashed border-gray-300 flex items-center justify-center cursor-pointer"
           >
-            {typeof window !== "undefined" &&
-            mainImageUrl instanceof window.File ? (
-              <img
-                src={URL.createObjectURL(mainImageUrl)}
-                alt="Product Main"
-                className="w-full h-full object-cover rounded"
-              />
-            ) : mainImageUrl ? (
+            {/* Muestra la imagen principal actual */}
+            {mainImageUrl ? (
               <img
                 src={mainImageUrl}
                 alt="Product Main"
                 className="w-full h-full object-cover rounded"
               />
             ) : (
-              <div>
-                <img
-                  src={IMAGE}
-                  alt="Placeholder"
-                  className="w-full h-32 object-cover rounded"
-                />
-              </div>
+              <img
+                src={IMAGE}
+                alt="Product Main"
+                className="w-full h-32 object-cover rounded"
+              />
             )}
             <input
-              id="productImage"
               type="file"
-              onChange={(e: any) => {
-                if (e.target.files.length > 0) {
-                  setMainImageUrl(e.target.files[0]);
-                }
-              }}
-              required
+              id="productMainImage"
+              onChange={handleMainImageChange}
               className="hidden"
             />
           </label>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 w-full mt-4">
-            {secondaryImageUrls.map((previewImage, index: number) => (
+            {secondaryImageUrls.map((url, index) => (
               <label
                 key={index}
                 htmlFor={`secondaryImage-${index}`}
-                className="w-40 h-40 object-cover border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer"
+                className="w-40 h-40 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer"
               >
-                {typeof window !== "undefined" &&
-                secondaryImageUrls.length > 0 &&
-                secondaryImageUrls[0] instanceof window.File ? (
-                  secondaryImageUrls.map((image, index) => (
-                    <img
-                      key={index}
-                      src={URL.createObjectURL(image)}
-                      alt={`Product Secondary ${index + 1}`}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ))
-                ) : secondaryImageUrls && secondaryImageUrls.length > 0 ? (
-                  secondaryImageUrls.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Product Secondary ${index + 1}`}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ))
+                {url ? (
+                  <img
+                    src={url}
+                    alt={`Producto Secundario ${index}`}
+                    className="object-cover h-full w-full rounded"
+                  />
                 ) : (
-                  <div>
-                    <img
-                      src={IMAGE}
-                      alt="Placeholder"
-                      className="w-full h-32 object-cover rounded"
-                    />
-                  </div>
+                  <img
+                    src={IMAGE}
+                    alt="Agregar Nueva Imagen"
+                    className="w-auto h-14 object-cover rounded"
+                  />
                 )}
                 <input
-                  id={`secondaryImage-${index}`}
                   type="file"
-                  onChange={(e) => handleSecondaryImagesChange(e, index)}
+                  id={`secondaryImage-${index}`}
+                  onChange={(e) => handleSecondaryImageChange(e, index)}
                   className="hidden"
                 />
               </label>
             ))}
-            <label
-              htmlFor={`secondaryImage-${secondaryImageUrls.length}`}
-              className="w-40 h-40 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer"
-            >
-              <img
-                src={IMAGE}
-                alt="Product Main"
-                className="w-auto h-14 object-cover rounded"
-              />
-              <input
-                id={`secondaryImage-${secondaryImageUrls.length}`}
-                type="file"
-                onChange={(e) =>
-                  handleSecondaryImagesChange(e, secondaryImageUrls.length)
-                }
-                className="hidden"
-              />
-            </label>
+            {secondaryImageUrls.length < 3 && (
+              <label
+                htmlFor={`secondaryImage-${secondaryImageUrls.length}`}
+                className="w-40 h-40 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer"
+              >
+                <img
+                  src={IMAGE}
+                  alt="Agregar Nueva Imagen"
+                  className="w-auto h-14 object-cover rounded"
+                />
+                <input
+                  type="file"
+                  id={`secondaryImage-${secondaryImageUrls.length}`}
+                  onChange={(e) =>
+                    handleSecondaryImageChange(e, secondaryImageUrls.length)
+                  }
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
 
           <div className="lg:hidden w-full mt-8">

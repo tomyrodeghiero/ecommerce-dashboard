@@ -47,8 +47,6 @@ const MyProductsPage = () => {
         ? prevSelectedProducts.filter((id) => id !== productId)
         : [...prevSelectedProducts, productId]
     );
-
-    console.log("selected", selectedProducts);
   };
 
   const imageSrc =
@@ -66,7 +64,6 @@ const MyProductsPage = () => {
     const response = await fetch("/api/products?page=1&limit=100");
     if (response.ok) {
       const data = await response.json();
-      console.log("PRODUCTS", data);
       setProducts(data.products);
     }
 
@@ -125,15 +122,33 @@ const MyProductsPage = () => {
     router.push(`/edit-product/${productId}`);
   };
 
-  const extractPrice = (product: any) => {
-    // Si el producto tiene un campo de precio directamente, úsalo
+  const getMinPrice = (product: any) => {
+    // Verifica si el producto tiene medidas y precios válidos
+    if (
+      product.measurements &&
+      product.measurements.length > 0 &&
+      product.measurements.some(
+        (measure: any) => typeof measure.price === "number"
+      )
+    ) {
+      // Filtra y mapea para obtener solo precios válidos
+      const prices = product.measurements
+        .map((measure: any) => measure.price)
+        .filter((price: number) => typeof price === "number" && !isNaN(price));
 
-    // Si el producto tiene un esquema de measures y deseas obtener el precio del primer measure, por ejemplo:
-    if (product.measurements && product.measurements.length > 0) {
-      return product.measurements[0].price; // asumiendo que measures es un array y cada measure tiene un campo de precio.
+      // Encuentra el precio mínimo
+      const minPrice = Math.min(...prices);
+
+      // Maneja el caso de precio igual a 0
+      if (minPrice === 0) {
+        return 0;
+      }
+
+      // Formatea y devuelve el precio mínimo
+      return formatPriceARS(minPrice);
     }
 
-    // Retorna 0 si no se puede determinar el precio (puedes ajustar esto según tus necesidades)
+    // Retorna un mensaje si no se puede determinar el precio
     return 0;
   };
 
@@ -153,8 +168,6 @@ const MyProductsPage = () => {
       return;
     }
 
-    console.log("sec", selectedProducts);
-    console.log("increasePercentage", parseFloat(increasePercentage));
     const response = await fetch("/api/products/price-increase", {
       method: "PATCH",
       headers: {
@@ -303,8 +316,16 @@ const MyProductsPage = () => {
                   <h3 className="font-bold text-[1.1rem] text-center">
                     {product.name}
                   </h3>
-                  <p className="text-yellow-800 mt-1 font-semibold">
-                    {formatPriceARS(product.price) || extractPrice(product)}
+                  <p
+                    className={`${
+                      getMinPrice(product) === 0
+                        ? "text-yellow-700"
+                        : "text-yellow-800"
+                    } mt-1 font-semibold`}
+                  >
+                    {getMinPrice(product) === 0
+                      ? "⚠️ Sin Precio"
+                      : `$ ${getMinPrice(product)}`}
                   </p>
                 </div>
                 <TriangleImg

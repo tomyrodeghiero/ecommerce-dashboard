@@ -20,7 +20,7 @@ const productSchema = new Schema({
   measurements: [
     {
       measure: { type: String, required: true },
-      price: { type: String, required: true },
+      price: { type: Number, required: true },
     },
   ],
 });

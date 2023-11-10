@@ -17,11 +17,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
 import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
-import {
-  addBreaksAfterPeriods,
-  formatPriceARS,
-  processPrice,
-} from "src/utils/functions";
+import { addBreaksAfterPeriods } from "src/utils/functions";
+import { Color } from "src/utils/interfaces";
 
 // Lazy-load ReactQuill for better performance and to avoid SSR issues
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -32,9 +29,10 @@ const AddProductPage = () => {
   const [productName, setProductName] = useState("");
   const [selectedColors, setSelectedColors] = useState([]);
   const [lightTone, setLightTone] = useState("");
+  const [colors, setColors] = useState<Color[]>([]);
 
   // Ref hook for accessing ReactQuill instance directly
-  const quillRef = useRef(null);
+  const quillRef = useRef<any>(null);
 
   // Effect for logging the Quill instance on mount
   useEffect(() => {}, []);
@@ -44,12 +42,9 @@ const AddProductPage = () => {
   const [additionalInformation, setAdditionalInformation] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mainImageUrl, setMainImageUrl] = useState(null);
+  const [mainImageUrl, setMainImageUrl] = useState<any>(null);
   const [previewImages, setPreviewImages] = useState([]);
-  const [measurements, setMeasurements] = useState([
-    { measure: "", price: "" },
-  ]);
-
+  const [measurements, setMeasurements] = useState([{ measure: "", price: 0 }]);
   const [category, setCategory] = useState("");
   const [productStock, setProductStock] = useState(1);
 
@@ -112,8 +107,13 @@ const AddProductPage = () => {
     formData.append("category", category);
     formData.append("stock", String(productStock)); // Ensure stock is a string
     measurements.forEach((measurement, index) => {
+      // Reemplaza la coma por un punto
+
       formData.append(`measurements[${index}][measure]`, measurement.measure);
-      formData.append(`measurements[${index}][price]`, measurement.price);
+      formData.append(
+        `measurements[${index}][price]`,
+        measurement.price.toString()
+      );
     });
 
     selectedColors.forEach((color) => {
@@ -140,7 +140,7 @@ const AddProductPage = () => {
       if (response.ok) {
         // Clearing the form after successful submission
         setProductName("");
-        setMeasurements([{ measure: "", price: "" }]);
+        setMeasurements([{ measure: "", price: 0 }]);
         setProductDescription("");
         setAdditionalInformation("");
         setCategory("");
@@ -176,13 +176,20 @@ const AddProductPage = () => {
   };
 
   // Function for handling changes in secondary images
-  const handleSecondaryImagesChange = (e: any, index: number) => {
-    const newFile = e.target.files[0];
-    setPreviewImages((prevImages: any) =>
-      prevImages.map((img: any, index: number) =>
-        index === index ? newFile : img
-      )
-    );
+  const handleSecondaryImagesChange = (event: any, index: number) => {
+    const newFile = event.target.files[0];
+    if (!newFile) return; // Previene la actualización si no hay un archivo seleccionado
+
+    // Actualiza la imagen existente en el índice específico o agrega una nueva
+    setPreviewImages((prevImages: any) => {
+      if (index < prevImages.length) {
+        return prevImages.map((img: string, imgIndex: number) =>
+          imgIndex === index ? newFile : img
+        );
+      } else {
+        return [...prevImages, newFile];
+      }
+    });
   };
 
   // Function for generating product descriptions
@@ -192,8 +199,8 @@ const AddProductPage = () => {
   ) => {
     setIsLoading(true);
     const prompt = additional
-      ? `Create a very brief introduction for the product ${product}, highlighting its key points.`
-      : `Generate a detailed description for the product ${product}, highlighting all its features and benefits.`;
+      ? `Create a very brief introduction in Spanish for the product ${product}, highlighting its key points.`
+      : `Generate a detailed description in Spanish for the product ${product}, highlighting all its features and benefits.`;
 
     try {
       const response = await fetch("/api/product-completion", {
@@ -246,19 +253,31 @@ const AddProductPage = () => {
     []
   );
 
-  const handleMeasurementChange = (
-    index: number,
-    field: "measure" | "price",
-    value: string
-  ) => {
-    const newMeasurements = [...measurements];
-    newMeasurements[index][field] = value;
-    setMeasurements(newMeasurements);
+  const handleMeasurementChange = (index: number, field: any, value: any) => {
+    const updatedMeasurements = measurements.map((measurement, i) =>
+      i === index ? { ...measurement, [field]: value } : measurement
+    );
+
+    if (field === "price") {
+      updatedMeasurements[index].price = parseFloat(value) || 0;
+    }
+
+    setMeasurements(updatedMeasurements);
   };
 
   const addMeasurementField = () => {
-    setMeasurements((prev) => [...prev, { measure: "", price: "" }]);
+    setMeasurements((prev: any) => [...prev, { measure: "", price: 0 }]);
   };
+
+  useEffect(() => {
+    const fetchColors = async () => {
+      const response = await fetch("/api/colors");
+      const data = await response.json();
+      setColors(data);
+    };
+
+    fetchColors();
+  }, []);
 
   return (
     <>
@@ -310,22 +329,9 @@ const AddProductPage = () => {
                       placeholder="Precio"
                       onChange={(e) => {
                         const inputValue = e.target.value;
-                        const filteredValue = inputValue.replace(
-                          /[^0-9.]/g,
-                          ""
-                        );
-                        handleMeasurementChange(index, "price", filteredValue);
+                        handleMeasurementChange(index, "price", inputValue);
                       }}
-                      onBlur={() => {
-                        if (measurement.price) {
-                          handleMeasurementChange(
-                            index,
-                            "price",
-                            formatPriceARS(processPrice(measurement.price))
-                          );
-                        }
-                      }}
-                      className="p-2 border rounded w-40" // added some styling
+                      className="p-2 border rounded w-40"
                     />
                   </div>
                   {index === measurements.length - 1 && (
@@ -371,13 +377,13 @@ const AddProductPage = () => {
                   renderValue={(selected) =>
                     (selected as string[])
                       .map((colorHex) => {
-                        const color = COLORS.find((c) => c.hex === colorHex);
+                        const color = colors.find((c) => c.hex === colorHex);
                         return color ? color.name : "";
                       })
                       .join(", ")
                   }
                 >
-                  {COLORS.map((colorOption, index) => (
+                  {colors.map((colorOption: any, index: number) => (
                     <MenuItem key={index} value={colorOption.hex}>
                       <Checkbox
                         checked={selectedColors.includes(colorOption.hex)}
@@ -513,23 +519,17 @@ const AddProductPage = () => {
           </label>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 w-full mt-4">
-            {previewImages.map((previewImage, index: number) => (
+            {previewImages.map((previewImage, index) => (
               <label
                 key={index}
                 htmlFor={`secondaryImage-${index}`}
-                className="w-40 h-40 object-cover border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer"
+                className="w-40 h-40 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer"
               >
-                {previewImage ? (
+                {previewImage && (
                   <img
                     src={URL.createObjectURL(previewImage)}
-                    alt="Product Secondary"
+                    alt={`Product Secondary ${index}`}
                     className="object-cover h-full w-full rounded"
-                  />
-                ) : (
-                  <img
-                    src={IMAGE}
-                    alt="Product Main"
-                    className="w-full h-48 object-cover rounded"
                   />
                 )}
                 <input
@@ -546,7 +546,7 @@ const AddProductPage = () => {
             >
               <img
                 src={IMAGE}
-                alt="Product Main"
+                alt="Add New Product"
                 className="w-auto h-14 object-cover rounded"
               />
               <input

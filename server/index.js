@@ -12,6 +12,7 @@ const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 mongoose.set("strictQuery", false);
 const Product = require("./models/Product.js");
+const Color = require("./models/Color");
 const bcrypt = require("bcryptjs");
 const app = express();
 const cookieParser = require("cookie-parser");
@@ -467,6 +468,50 @@ app.patch("/api/products/price-increase", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// colors
+app.get("/api/colors", async (req, res) => {
+  try {
+    const colors = await Color.find();
+    res.json(colors);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error al obtener colores" });
+  }
+});
+
+app.put("/api/update-colors", async (req, res) => {
+  try {
+    const { colors } = req.body;
+
+    await Color.deleteMany({});
+    await Color.insertMany(colors);
+    res.status(200).json({ message: "Colores actualizados correctamente" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error al actualizar colores" });
+  }
+});
+
+// Endpoint to delete a specific color
+app.delete("/api/delete-color/:id", async (req, res) => {
+  try {
+    const { colorId } = req.params; // Get the color ID from the URL
+
+    // Delete the color with the given ID
+    const result = await Color.deleteOne({ _id: colorId });
+
+    // Check if the color was deleted
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "Color no encontrado" });
+    }
+
+    res.status(200).json({ message: "Color eliminado correctamente" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error al eliminar color" });
   }
 });
 

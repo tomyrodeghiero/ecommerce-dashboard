@@ -116,8 +116,11 @@ const AddProductPage = () => {
       );
     });
 
-    selectedColors.forEach((color) => {
-      formData.append("colors", color);
+    selectedColors.forEach((color: any) => {
+      formData.append(
+        "colors",
+        JSON.stringify({ name: color.name, hex: color.hex })
+      );
     });
 
     formData.append("lightTone", lightTone);
@@ -274,6 +277,7 @@ const AddProductPage = () => {
       const response = await fetch("/api/colors");
       const data = await response.json();
       setColors(data);
+      console.log("data ", data);
     };
 
     fetchColors();
@@ -371,11 +375,21 @@ const AddProductPage = () => {
                   labelId="colors-label"
                   id="colors"
                   multiple
-                  value={selectedColors}
-                  onChange={(e: any) => setSelectedColors(e.target.value)}
+                  value={selectedColors.map((color) => color.hex)}
+                  onChange={(e) => {
+                    const selectedColorObjects = e.target.value.map(
+                      (selectedHex: any) => {
+                        return colors.find(
+                          (color) => color.hex === selectedHex
+                        );
+                      }
+                    );
+
+                    setSelectedColors(selectedColorObjects);
+                  }}
                   label="Colores"
                   renderValue={(selected) =>
-                    (selected as string[])
+                    selected
                       .map((colorHex) => {
                         const color = colors.find((c) => c.hex === colorHex);
                         return color ? color.name : "";
@@ -383,10 +397,12 @@ const AddProductPage = () => {
                       .join(", ")
                   }
                 >
-                  {colors.map((colorOption: any, index: number) => (
+                  {colors.map((colorOption, index) => (
                     <MenuItem key={index} value={colorOption.hex}>
                       <Checkbox
-                        checked={selectedColors.includes(colorOption.hex)}
+                        checked={selectedColors.some(
+                          (color: any) => color.hex === colorOption.hex
+                        )}
                       />
                       <ListItemText primary={colorOption.name} />
                       <div

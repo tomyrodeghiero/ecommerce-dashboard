@@ -2,7 +2,6 @@
 
 import { OPTIONS_ICON } from "../../../utils/images/icons";
 import { formatPriceARS } from "../../../utils/functions";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";

@@ -136,7 +136,6 @@ app.post(
         description,
         category,
         stock,
-        briefDescription,
         additionalInformation,
         isOnSale,
         discount,
@@ -145,6 +144,8 @@ app.post(
         lightTone,
         measurements,
       } = req.body;
+
+      console.log("COLORES EN EL BACKEND", colors);
 
       const mainImageUrl = req.files[0].path;
       const secondaryImageUrls = req.files.slice(1).map((file) => file.path);

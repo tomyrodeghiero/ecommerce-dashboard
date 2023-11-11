@@ -53,7 +53,7 @@ const AppBarContent = (props: Props) => {
             onClick={toggleNavVisibility}
             sx={{ ml: -2.75, ...(hiddenSm ? {} : { mr: 3.5 }) }}
           >
-            <Menu />
+            {/* <Menu /> */}
           </IconButton>
         ) : null}
         <TextField

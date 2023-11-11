@@ -34,7 +34,7 @@ const navigation = (): VerticalNavItemsType => {
       path: "/add-product",
     },
     {
-      title: "Mis Colores",
+      title: "Paleta de Colores",
       icon: FormatLetterCase,
       path: "/my-colors",
     },

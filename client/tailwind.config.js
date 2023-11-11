@@ -13,6 +13,11 @@ module.exports = {
       colors: {
         gray: { 200: "#f4f5fa" },
         rose: { 300: "#F9F1E7" },
+        yellow: {
+          400: "#ffca0a",
+          500: "#F1A700",
+          600: "#B88E2F",
+        },
       },
     },
   },

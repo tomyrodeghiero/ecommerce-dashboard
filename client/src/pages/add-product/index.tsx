@@ -17,7 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
 import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
-import { addBreaksAfterPeriods } from "src/utils/functions";
+import { addBreaksAfterPeriods, formatPriceARS } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
 
 // Lazy-load ReactQuill for better performance and to avoid SSR issues
@@ -44,7 +44,9 @@ const AddProductPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<any>(null);
   const [previewImages, setPreviewImages] = useState([]);
-  const [measurements, setMeasurements] = useState([{ measure: "", price: 0 }]);
+  const [measurements, setMeasurements] = useState([
+    { measure: "", price: null },
+  ]);
   const [category, setCategory] = useState("");
   const [productStock, setProductStock] = useState(1);
 
@@ -143,7 +145,7 @@ const AddProductPage = () => {
       if (response.ok) {
         // Clearing the form after successful submission
         setProductName("");
-        setMeasurements([{ measure: "", price: 0 }]);
+        setMeasurements([{ measure: "", price: null }]);
         setProductDescription("");
         setAdditionalInformation("");
         setCategory("");
@@ -269,7 +271,7 @@ const AddProductPage = () => {
   };
 
   const addMeasurementField = () => {
-    setMeasurements((prev: any) => [...prev, { measure: "", price: 0 }]);
+    setMeasurements((prev: any) => [...prev, { measure: "", price: null }]);
   };
 
   useEffect(() => {
@@ -283,23 +285,38 @@ const AddProductPage = () => {
     fetchColors();
   }, []);
 
+  const handlePriceBlur = (index: number) => {
+    const updatedMeasurements = measurements.map((measurement, i) => {
+      if (i === index) {
+        // Aplicar el formato al precio actual
+        const formattedPrice = formatPriceARS(measurement.price);
+
+        return { ...measurement, price: formattedPrice };
+      } else {
+        return measurement;
+      }
+    });
+
+    setMeasurements(updatedMeasurements);
+  };
+
   return (
     <>
       <div className="lg:flex w-full gap-8">
         <div className="w-full lg:1/2">
           <p className="uppercase font-medium text-sm text-gray-500">
-            🛍️ Mi E-commerce
+            💡 ¡Agreguemos un nuevo producto!
           </p>
           <div className="flex gap-5 items-center">
             <input
               className="text-gray-800 px-2 h-14 bg-gray-200 mt-1 text-4xl w-3/4 font-medium"
               value={productName}
-              placeholder="Nombre del Producto"
+              placeholder="Nombre"
               onChange={(e) => setProductName(e.target.value)}
             />
 
             <div className="flex items-center space-x-2">
-              <span className="text-gray-600">🧮 Stock:</span>
+              <span className="text-gray-600">🧮 Stock</span>
               <input
                 className="text-gray-700 border border-gray-400 bg-transparent rounded text-center flex justify-center h-8 p-2 w-10 text-lg font-medium"
                 value={productStock}
@@ -335,13 +352,14 @@ const AddProductPage = () => {
                         const inputValue = e.target.value;
                         handleMeasurementChange(index, "price", inputValue);
                       }}
+                      // onBlur={() => handlePriceBlur(index)}
                       className="p-2 border rounded w-40"
                     />
                   </div>
                   {index === measurements.length - 1 && (
                     <button
                       onClick={addMeasurementField}
-                      className="ml-4 flex items-center justify-center bg-blue-600 text-white h-8 w-8 rounded-full hover:bg-blue-700 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+                      className="ml-4 flex items-center justify-center bg-yellow-500 text-white h-8 w-8 rounded-full hover:bg-yellow-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
                       aria-label="Agregar Medida/Precio"
                     >
                       +
@@ -489,11 +507,11 @@ const AddProductPage = () => {
               onClick={handleSubmitProduct}
               variant="contained"
               sx={{
-                backgroundColor: "#6747E7",
-                boxShadow: "0 1px 14px 1px #6747E7",
+                backgroundColor: "#E8B600", // Amarillo oscuro, pero claramente amarillo
+                boxShadow: "0 1px 14px 1px #E8B600", // Sombra en el mismo tono amarillo
                 "&:hover": {
                   boxShadow: "none",
-                  backgroundColor: "#593AD8",
+                  backgroundColor: "#F1A700", // Un tono de amarillo ligeramente más oscuro para el efecto de hover
                 },
               }}
             >

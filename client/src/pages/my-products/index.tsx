@@ -319,7 +319,7 @@ const MyProductsPage = () => {
                   <p
                     className={`${
                       getMinPrice(product) === 0
-                        ? "text-white bg-yellow-800 px-2 py-1 rounded-lg"
+                        ? "text-white bg-[#D5A701] px-2 py-1 rounded-lg"
                         : "text-yellow-800"
                     } mt-1 font-semibold`}
                   >

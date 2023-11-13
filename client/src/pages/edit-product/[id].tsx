@@ -484,11 +484,11 @@ const EditProductPage = () => {
               onClick={handleSubmitUpdateProduct}
               variant="contained"
               sx={{
-                backgroundColor: "#6747E7",
-                boxShadow: "0 1px 14px 1px #6747E7",
+                backgroundColor: "#E8B600",
+                boxShadow: "0 1px 14px 1px #E8B600",
                 "&:hover": {
                   boxShadow: "none",
-                  backgroundColor: "#593AD8",
+                  backgroundColor: "#F1A700",
                 },
               }}
             >

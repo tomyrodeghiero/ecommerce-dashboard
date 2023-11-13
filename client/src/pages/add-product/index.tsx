@@ -16,7 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 // Importing necessary utility functions and constants
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
-import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
+import { CATEGORIES, FORMATS, LIGHT_TONES } from "src/utils/constants";
 import { addBreaksAfterPeriods, formatPriceARS } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
 

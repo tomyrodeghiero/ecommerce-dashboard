@@ -17,6 +17,7 @@ import Button from "@mui/material/Button";
 import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
 import { useRouter } from "next/router";
 import { addBreaksAfterPeriods } from "src/utils/functions";
+import { Color } from "src/utils/interfaces";
 
 // Import the editor component dynamically
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -30,7 +31,7 @@ const EditProductPage = () => {
   const [productPrice, setProductPrice] = useState<number | null>(null);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [lightTone, setLightTone] = useState("");
-  const [previewImages, setPreviewImages] = useState([]);
+  const [colors, setColors] = useState<Color[]>([]);
 
   const quillRef = useRef(null);
 
@@ -60,6 +61,7 @@ const EditProductPage = () => {
 
   useEffect(() => {
     const fetchProductDetails = async () => {
+      console.log("params", id);
       if (id) {
         const response = await fetch(`/api/product/${id}`);
         if (response.ok) {
@@ -69,6 +71,7 @@ const EditProductPage = () => {
           if (product.measurements && product.measurements.length > 0) {
             setMeasurements(product.measurements);
           }
+
           // Assign the product data to the respective states.
           setProductName(product.name);
           setProductPrice(product.price);
@@ -78,6 +81,7 @@ const EditProductPage = () => {
           setMainImageUrl(product.mainImageUrl);
           setSecondaryImageUrls(product.secondaryImageUrls);
           setSelectedColors(product.colors);
+          console.log("product :)", product);
           setLightTone(product.lightTone);
         }
       }
@@ -291,6 +295,17 @@ const EditProductPage = () => {
     []
   );
 
+  useEffect(() => {
+    const fetchColors = async () => {
+      const response = await fetch("/api/colors");
+      const data = await response.json();
+      setColors(data);
+      console.log("data ", data);
+    };
+
+    fetchColors();
+  }, []);
+
   return (
     <>
       <div className="lg:flex w-full gap-8">
@@ -389,13 +404,13 @@ const EditProductPage = () => {
                   renderValue={(selected) =>
                     (selected as string[])
                       .map((colorHex) => {
-                        const color = COLORS.find((c) => c.hex === colorHex);
+                        const color = colors.find((c) => c.hex === colorHex);
                         return color ? color.name : "";
                       })
                       .join(", ")
                   }
                 >
-                  {COLORS.map((colorOption, index) => (
+                  {colors.map((colorOption, index) => (
                     <MenuItem key={index} value={colorOption.hex}>
                       <Checkbox
                         checked={selectedColors.includes(colorOption.hex)}

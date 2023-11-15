@@ -146,11 +146,14 @@ const AddProductPage = () => {
         // Clearing the form after successful submission
         setProductName("");
         setMeasurements([{ measure: "", price: null }]);
+        setSelectedColors([]); // Clearing selected colors
+        setCategory(""); // Clearing category
         setProductDescription("");
         setAdditionalInformation("");
-        setCategory("");
         setMainImageUrl(null);
         setPreviewImages([]);
+        setProductStock(1); // Reset stock to 1 or your default value
+        setLightTone(""); // Clearing light tone selection
 
         toast.success("El producto ha sido añadido.", {
           position: "top-center",
@@ -279,7 +282,6 @@ const AddProductPage = () => {
       const response = await fetch("/api/colors");
       const data = await response.json();
       setColors(data);
-      console.log("data ", data);
     };
 
     fetchColors();

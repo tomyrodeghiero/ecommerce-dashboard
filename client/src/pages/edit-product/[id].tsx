@@ -14,7 +14,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
 import Button from "@mui/material/Button";
-import { CATEGORIES, COLORS, FORMATS, LIGHT_TONES } from "src/utils/constants";
+import { CATEGORIES, FORMATS, LIGHT_TONES } from "src/utils/constants";
 import { useRouter } from "next/router";
 import { addBreaksAfterPeriods } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
@@ -61,7 +61,6 @@ const EditProductPage = () => {
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      console.log("params", id);
       if (id) {
         const response = await fetch(`/api/product/${id}`);
         if (response.ok) {
@@ -81,7 +80,6 @@ const EditProductPage = () => {
           setMainImageUrl(product.mainImageUrl);
           setSecondaryImageUrls(product.secondaryImageUrls);
           setSelectedColors(product.colors);
-          console.log("product :)", product);
           setLightTone(product.lightTone);
         }
       }
@@ -300,7 +298,6 @@ const EditProductPage = () => {
       const response = await fetch("/api/colors");
       const data = await response.json();
       setColors(data);
-      console.log("data ", data);
     };
 
     fetchColors();
@@ -402,11 +399,15 @@ const EditProductPage = () => {
                   onChange={(e: any) => setSelectedColors(e.target.value)}
                   label="Colores"
                   renderValue={(selected) =>
-                    (selected as string[])
+                    selected
                       .map((colorHex) => {
-                        const color = colors.find((c) => c.hex === colorHex);
-                        return color ? color.name : "";
+                        // Find the color object that matches the hex value
+                        const colorObj = colors.find(
+                          (color) => color.hex === colorHex
+                        );
+                        return colorObj ? colorObj.name : "";
                       })
+                      .filter((name) => name !== "") // Filter out empty strings
                       .join(", ")
                   }
                 >
@@ -425,7 +426,7 @@ const EditProductPage = () => {
                           display: "inline-block",
                           marginLeft: "10px",
                         }}
-                      ></div>
+                      />
                     </MenuItem>
                   ))}
                 </Select>
@@ -499,11 +500,11 @@ const EditProductPage = () => {
               onClick={handleSubmitUpdateProduct}
               variant="contained"
               sx={{
-                backgroundColor: "#E8B600",
-                boxShadow: "0 1px 14px 1px #E8B600",
+                backgroundColor: "#E8B600", // Amarillo oscuro, pero claramente amarillo
+                boxShadow: "0 1px 14px 1px #E8B600", // Sombra en el mismo tono amarillo
                 "&:hover": {
                   boxShadow: "none",
-                  backgroundColor: "#F1A700",
+                  backgroundColor: "#F1A700", // Un tono de amarillo ligeramente más oscuro para el efecto de hover
                 },
               }}
             >

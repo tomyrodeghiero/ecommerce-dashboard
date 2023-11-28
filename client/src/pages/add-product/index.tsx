@@ -287,21 +287,6 @@ const AddProductPage = () => {
     fetchColors();
   }, []);
 
-  const handlePriceBlur = (index: number) => {
-    const updatedMeasurements = measurements.map((measurement, i) => {
-      if (i === index) {
-        // Aplicar el formato al precio actual
-        const formattedPrice = formatPriceARS(measurement.price);
-
-        return { ...measurement, price: formattedPrice };
-      } else {
-        return measurement;
-      }
-    });
-
-    setMeasurements(updatedMeasurements);
-  };
-
   return (
     <>
       <div className="lg:flex w-full gap-8">

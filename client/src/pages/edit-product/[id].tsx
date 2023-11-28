@@ -42,9 +42,7 @@ const EditProductPage = () => {
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<any | null>(null);
-  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [secondaryImageUrls, setSecondaryImageUrls] = useState<string[]>([]);
-  const [productBriefDescription, setProductBriefDescription] = useState("");
   const [category, setCategory] = useState("");
   const [productStock, setProductStock] = useState<any>(1);
   const [additionalInformation, setAdditionalInformation] =
@@ -54,7 +52,6 @@ const EditProductPage = () => {
   // Handle the change of the main image
   const handleMainImageChange = (event: any) => {
     if (event.target.files && event.target.files[0]) {
-      setMainImageFile(event.target.files[0]);
       setMainImageUrl(URL.createObjectURL(event.target.files[0]));
     }
   };
@@ -79,8 +76,19 @@ const EditProductPage = () => {
           setCategory(product.category);
           setMainImageUrl(product.mainImageUrl);
           setSecondaryImageUrls(product.secondaryImageUrls);
-          setSelectedColors(product.colors);
           setLightTone(product.lightTone);
+
+          let parsedSelectedColors = [];
+          if (product && product.colors) {
+            try {
+              parsedSelectedColors = product.colors.map((colorString: string) =>
+                JSON.parse(colorString)
+              );
+            } catch (error) {
+              console.error("Error to parse colors", error);
+            }
+          }
+          setSelectedColors(parsedSelectedColors);
         }
       }
     };
@@ -114,11 +122,7 @@ const EditProductPage = () => {
       );
     }
 
-    if (
-      measurements.some(
-        (measurement) => !measurement.measure || !measurement.price
-      )
-    ) {
+    if (measurements.some((measurement) => !measurement.measure)) {
       return showErrorMessage(
         "Ensure all measurements have both measure and price filled"
       );
@@ -133,14 +137,19 @@ const EditProductPage = () => {
     formData.append("stock", String(productStock)); // Ensure stock is a string
     measurements.forEach((measurement, index) => {
       formData.append(`measurements[${index}][measure]`, measurement.measure);
-      formData.append(
-        `measurements[${index}][price]`,
-        measurement.price.toString()
-      );
+      if (measurement.price) {
+        formData.append(
+          `measurements[${index}][price]`,
+          measurement?.price.toString()
+        );
+      } else {
+        formData.append(`measurements[${index}][price]`, "0");
+      }
     });
 
     selectedColors.forEach((color) => {
-      formData.append("colors", color);
+      const colorString = JSON.stringify(color);
+      formData.append("colors", colorString);
     });
 
     formData.append("lightTone", lightTone);
@@ -395,26 +404,34 @@ const EditProductPage = () => {
                   labelId="colors-label"
                   id="colors"
                   multiple
-                  value={selectedColors}
-                  onChange={(e: any) => setSelectedColors(e.target.value)}
+                  value={selectedColors.map((color: any) => color.hex)}
+                  onChange={(e: any) => {
+                    const selectedColorObjects = e.target.value.map(
+                      (selectedHex: any) => {
+                        return colors.find(
+                          (color) => color.hex === selectedHex
+                        );
+                      }
+                    );
+
+                    setSelectedColors(selectedColorObjects);
+                  }}
                   label="Colores"
                   renderValue={(selected) =>
                     selected
                       .map((colorHex) => {
-                        // Find the color object that matches the hex value
-                        const colorObj = colors.find(
-                          (color) => color.hex === colorHex
-                        );
-                        return colorObj ? colorObj.name : "";
+                        const color = colors.find((c) => c.hex === colorHex);
+                        return color ? color.name : "";
                       })
-                      .filter((name) => name !== "") // Filter out empty strings
                       .join(", ")
                   }
                 >
                   {colors.map((colorOption, index) => (
                     <MenuItem key={index} value={colorOption.hex}>
                       <Checkbox
-                        checked={selectedColors.includes(colorOption.hex)}
+                        checked={selectedColors.some(
+                          (color: any) => color.hex === colorOption.hex
+                        )}
                       />
                       <ListItemText primary={colorOption.name} />
                       <div
@@ -426,7 +443,7 @@ const EditProductPage = () => {
                           display: "inline-block",
                           marginLeft: "10px",
                         }}
-                      />
+                      ></div>
                     </MenuItem>
                   ))}
                 </Select>
@@ -593,17 +610,18 @@ const EditProductPage = () => {
               onClick={handleSubmitUpdateProduct}
               variant="contained"
               sx={{
-                backgroundColor: "#6747E7",
-                boxShadow: "0 1px 14px 1px #6747E7",
-                height: "3rem",
-                width: "100%",
+                backgroundColor: "#E8B600",
+                boxShadow: "0 1px 14px 1px #E8B600",
                 "&:hover": {
                   boxShadow: "none",
-                  backgroundColor: "#593AD8",
+                  backgroundColor: "#F1A700",
                 },
+                width: "100%",
+                padding: "0.75rem 0",
+                fontSize: "1rem",
               }}
             >
-              Cargar Producto
+              Actualizar Producto
             </Button>
           </div>
         </div>

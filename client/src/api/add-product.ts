@@ -13,7 +13,7 @@ export default async function handler(req: any, res: any) {
       colors,
       sizes,
       lightTone,
-      measurements, // Extraigo directamente las mediciones
+      measurements,
     } = req.body;
 
     try {
@@ -33,7 +33,7 @@ export default async function handler(req: any, res: any) {
           sizes,
           lightTone,
           measurements,
-        }), // Pasamos todo como JSON
+        }),
         headers: { "Content-Type": "application/json" },
         redirect: "follow",
       };

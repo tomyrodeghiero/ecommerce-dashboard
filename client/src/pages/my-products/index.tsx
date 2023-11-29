@@ -229,6 +229,12 @@ const MyProductsPage = () => {
     }
   };
 
+  // Function to select all products
+  const selectAllProducts = () => {
+    const allProductIds = products.map((product) => product._id);
+    setSelectedProducts(allProductIds);
+  };
+
   return (
     <ApexChartWrapper>
       <div className="flex justify-end items-center gap-4 p-4">
@@ -240,12 +246,41 @@ const MyProductsPage = () => {
               onChange={(e) => setIncreasePercentage(e.target.value)}
               placeholder="% de aumento"
               onBlur={handleBlur}
-              className="border-2 text-center outline-1 outline-slate-400 font-semibold border-gray-300 p-2 rounded-md mb-2" // Añadido mb-2 para margen entre el input y el botón
+              className="border-2 text-center outline-1 outline-slate-400 font-semibold border-gray-300 p-2 rounded-md"
             />
-            <Button onClick={handleIncreasePrices} variant="contained">
+            <Button
+              onClick={handleIncreasePrices}
+              variant="contained"
+              sx={{
+                backgroundColor: "#F1A700",
+                boxShadow: "0 1px 14px 1px #F1A700",
+                "&:hover": {
+                  boxShadow: "none",
+                  backgroundColor: "#F1A700",
+                },
+                marginRight: "10px",
+              }}
+            >
               Aumentar precios
             </Button>
           </>
+        )}
+        {selectedProducts.length !== products.length && (
+          <Button
+            onClick={selectAllProducts}
+            variant="contained"
+            sx={{
+              backgroundColor: "#2a3243",
+              boxShadow: "0 1px 14px 1px #2a3243",
+              "&:hover": {
+                boxShadow: "none",
+                backgroundColor: "#2a3243",
+              },
+              marginRight: "10px",
+            }}
+          >
+            Seleccionar Todos
+          </Button>
         )}
       </div>
 

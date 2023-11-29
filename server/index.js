@@ -432,22 +432,19 @@ app.patch("/api/products/price-increase", async (req, res) => {
     const updatePromises = productIds.map((productId) => {
       return Product.findById(productId).then((product) => {
         if (product) {
-          // Actualiza el precio en el nivel superior si existe y es un número
           if (typeof product.price === "number") {
-            product.price = formatPriceARS(product.price * increaseFactor);
+            product.price *= increaseFactor;
           }
 
-          // Actualiza los precios dentro de measurements
           product.measurements.forEach((measurement) => {
-            if (measurement.price) {
-              let formattedPrice = measurement.price
-                .replace(/\./g, "")
-                .replace(/,/g, ".");
+            if (typeof measurement.price === "number") {
+              measurement.price *= increaseFactor;
+            } else if (typeof measurement.price === "string") {
+              let formattedPrice = parseFloat(
+                measurement.price.replace(/\./g, "").replace(/,/g, ".")
+              );
               if (!isNaN(formattedPrice)) {
-                let measurementPrice = parseFloat(formattedPrice);
-                measurement.price = formatPriceARS(
-                  measurementPrice * increaseFactor
-                );
+                measurement.price = formattedPrice * increaseFactor;
               }
             }
           });

@@ -266,9 +266,19 @@ const AddProductPage = () => {
       i === index ? { ...measurement, [field]: value } : measurement
     );
 
-    if (field === "price") {
-      updatedMeasurements[index].price = parseFloat(value) || 0;
-    }
+    setMeasurements(updatedMeasurements);
+  };
+
+  const handlePriceBlur = (index: number) => {
+    const updatedMeasurements: any = measurements.map((measurement, i) => {
+      if (i === index && measurement.price) {
+        return {
+          ...measurement,
+          price: parseFloat(measurement.price).toFixed(2),
+        };
+      }
+      return measurement;
+    });
 
     setMeasurements(updatedMeasurements);
   };
@@ -335,11 +345,11 @@ const AddProductPage = () => {
                       type="text"
                       value={measurement.price}
                       placeholder="Precio"
+                      onBlur={() => handlePriceBlur(index)}
                       onChange={(e) => {
                         const inputValue = e.target.value;
                         handleMeasurementChange(index, "price", inputValue);
                       }}
-                      // onBlur={() => handlePriceBlur(index)}
                       className="p-2 border rounded w-40"
                     />
                   </div>
@@ -380,8 +390,8 @@ const AddProductPage = () => {
                   labelId="colors-label"
                   id="colors"
                   multiple
-                  value={selectedColors.map((color) => color.hex)}
-                  onChange={(e) => {
+                  value={selectedColors.map((color: any) => color.hex)}
+                  onChange={(e: any) => {
                     const selectedColorObjects = e.target.value.map(
                       (selectedHex: any) => {
                         return colors.find(

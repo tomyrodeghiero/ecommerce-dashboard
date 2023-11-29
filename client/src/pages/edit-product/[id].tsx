@@ -63,9 +63,17 @@ const EditProductPage = () => {
         if (response.ok) {
           const product = await response.json();
 
-          // If the product has measurements, set them to the state.
+          // If the product has measurements, set them to the state
           if (product.measurements && product.measurements.length > 0) {
-            setMeasurements(product.measurements);
+            // If the product has measurements, format them to have two decimals
+            const formattedMeasurements = product.measurements.map(
+              (m: any) => ({
+                ...m,
+                price: parseFloat(m.price).toFixed(2),
+              })
+            );
+
+            setMeasurements(formattedMeasurements);
           }
 
           // Assign the product data to the respective states.
@@ -259,14 +267,10 @@ const EditProductPage = () => {
     }
   };
 
-  const handleMeasurementChange = (index: number, field: any, value: any) => {
+  const handleMeasurementChange = (index: number, field, value) => {
     const updatedMeasurements = measurements.map((measurement, i) =>
       i === index ? { ...measurement, [field]: value } : measurement
     );
-
-    if (field === "price") {
-      updatedMeasurements[index].price = parseFloat(value) || 0;
-    }
 
     setMeasurements(updatedMeasurements);
   };
@@ -311,6 +315,22 @@ const EditProductPage = () => {
 
     fetchColors();
   }, []);
+
+  const handlePriceBlur = (index: number) => {
+    const updatedMeasurements = measurements.map(
+      (measurement: any, i: number) => {
+        if (i === index && measurement.price) {
+          return {
+            ...measurement,
+            price: parseFloat(measurement.price).toFixed(2),
+          };
+        }
+        return measurement;
+      }
+    );
+
+    setMeasurements(updatedMeasurements);
+  };
 
   return (
     <>
@@ -360,6 +380,7 @@ const EditProductPage = () => {
                       type="text"
                       value={measurement.price}
                       placeholder="Precio"
+                      onBlur={() => handlePriceBlur(index)}
                       onChange={(e) => {
                         const inputValue = e.target.value;
                         handleMeasurementChange(index, "price", inputValue);

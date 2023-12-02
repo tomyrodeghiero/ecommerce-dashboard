@@ -1,14 +1,5 @@
-// Categories: Joyas Boulevard
-// export const CATEGORIES = [
-//   "Aros",
-//   "Cadenas",
-//   "Conjuntos",
-//   "Dijes",
-//   "Pulseras"
-// ];
-
-// Categories: Sophiluim - Iluminación Creativa
-export const CATEGORIES = [
+// Categories, colors, sizes & light tones: Sophiluim - Iluminación Creativa
+export const SOPHILUM_CATEGORIES = [
   "Controladores de Luz",
   "Cables y Conectores",
   "Focos Exteriores",
@@ -45,6 +36,15 @@ export const LIGHT_TONES = [
   "Frío",
   "Luz del Día",
   "Anochecer",
+];
+
+// Categories: Joyas Boulevard
+export const JOYAS_BOULEVARD_CATEGORIES = [
+  "Aros",
+  "Cadenas",
+  "Conjuntos",
+  "Dijes",
+  "Pulseras",
 ];
 
 // Formats supported by ReactQuill editor

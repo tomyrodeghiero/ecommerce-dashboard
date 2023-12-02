@@ -143,6 +143,8 @@ app.post(
         sizes,
         lightTone,
         measurements,
+        username,
+        price,
       } = req.body;
 
       const mainImageUrl = req.files[0].path;
@@ -162,6 +164,8 @@ app.post(
         sizes,
         lightTone,
         measurements,
+        username,
+        price,
       });
 
       await product.save();
@@ -383,7 +387,7 @@ app.post("/api/product-completion", async (req, res) => {
         {
           role: "system",
           content:
-            "Eres un asistente servicial de Argentina especializado en marketing y redes sociales para comercio electrónico. Tu tarea es generar una descripción atractiva para un producto de iluminación utilizando muy pocos emogis.",
+            "Eres un asistente servicial de Argentina especializado en marketing y redes sociales para comercio electrónico. Tu tarea es generar una descripción atractiva para el siguiente producto solicitado.",
         },
         {
           role: "user",
@@ -407,7 +411,7 @@ function formatPriceARS(price) {
     priceStr = entirePart + "," + decimalPart;
     return priceStr;
   }
-  return price; // Retorna el precio sin cambios si no es un número
+  return price;
 }
 
 // PATCH prices of selected products by a percentage

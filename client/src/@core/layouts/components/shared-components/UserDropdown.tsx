@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, SyntheticEvent, Fragment } from "react";
+import { useState, SyntheticEvent, Fragment, useEffect } from "react";
 
 // ** Next Import
 import { useRouter } from "next/router";
@@ -35,6 +35,12 @@ const BadgeContentSpan = styled("span")(({ theme }) => ({
 const UserDropdown = () => {
   // ** States
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+
+  const [userType, setUserType] = useState("");
+  useEffect(() => {
+    const storedUserType: any = localStorage.getItem("userType");
+    setUserType(storedUserType);
+  }, []);
 
   // ** Hooks
   const router = useRouter();
@@ -77,7 +83,11 @@ const UserDropdown = () => {
           alt="Sophilum"
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
-          src="/images/avatars/1.jpeg"
+          src={`${
+            userType === "sophilum ? "
+              ? "/images/avatars/sophilum-profile.jpeg"
+              : " /images/avatars/joyeria-boulevard-profile.jpeg"
+          }`}
         />
       </Badge>
       <Menu

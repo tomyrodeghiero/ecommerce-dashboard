@@ -16,7 +16,12 @@ import "react-toastify/dist/ReactToastify.css";
 // Importing necessary utility functions and constants
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
 import LoadingSpinner from "src/@core/components/loading-spinner";
-import { CATEGORIES, FORMATS, LIGHT_TONES } from "src/utils/constants";
+import {
+  SOPHILUM_CATEGORIES,
+  FORMATS,
+  LIGHT_TONES,
+  JOYAS_BOULEVARD_CATEGORIES,
+} from "src/utils/constants";
 import { addBreaksAfterPeriods, formatPriceARS } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
 
@@ -25,6 +30,12 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 // AddProductPage component definition
 const AddProductPage = () => {
+  const [userType, setUserType] = useState("");
+  useEffect(() => {
+    const storedUserType: any = localStorage.getItem("userType");
+    setUserType(storedUserType);
+  }, []);
+
   // State hooks for managing product information
   const [productName, setProductName] = useState("");
   const [selectedColors, setSelectedColors] = useState([]);
@@ -44,6 +55,7 @@ const AddProductPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<any>(null);
   const [previewImages, setPreviewImages] = useState([]);
+  const [price, setPrice] = useState<any>(null);
   const [measurements, setMeasurements] = useState([
     { measure: "", price: null },
   ]);
@@ -92,12 +104,13 @@ const AddProductPage = () => {
     }
 
     if (
+      userType === "sophilum" &&
       measurements.some(
         (measurement) => !measurement.measure || !measurement.price
       )
     ) {
       return showErrorMessage(
-        "Ensure all measurements have both measure and price filled"
+        "Asegúrese de que todas las medidas y precios estén completos"
       );
     }
 
@@ -108,24 +121,29 @@ const AddProductPage = () => {
     formData.append("description", productDescription);
     formData.append("category", category);
     formData.append("stock", String(productStock)); // Ensure stock is a string
-    measurements.forEach((measurement, index) => {
-      // Reemplaza la coma por un punto
+    formData.append("username", userType);
+    if (userType === "joyasboulevard")
+      formData.append("price", price.toString());
 
-      formData.append(`measurements[${index}][measure]`, measurement.measure);
-      formData.append(
-        `measurements[${index}][price]`,
-        measurement.price.toString()
-      );
-    });
+    if (userType === "sophilum") {
+      measurements.forEach((measurement: any, index: number) => {
+        // Reemplaza la coma por un punto
+        formData.append(`measurements[${index}][measure]`, measurement.measure);
+        formData.append(
+          `measurements[${index}][price]`,
+          measurement.price.toString()
+        );
+      });
 
-    selectedColors.forEach((color: any) => {
-      formData.append(
-        "colors",
-        JSON.stringify({ name: color.name, hex: color.hex })
-      );
-    });
+      selectedColors.forEach((color: any) => {
+        formData.append(
+          "colors",
+          JSON.stringify({ name: color.name, hex: color.hex })
+        );
+      });
 
-    formData.append("lightTone", lightTone);
+      formData.append("lightTone", lightTone);
+    }
 
     if (mainImageUrl) {
       formData.append("images", mainImageUrl, mainImageUrl.name);
@@ -145,7 +163,9 @@ const AddProductPage = () => {
       if (response.ok) {
         // Clearing the form after successful submission
         setProductName("");
-        setMeasurements([{ measure: "", price: null }]);
+        setPrice(null);
+        setPrice(null);
+        setMeasurements([{ measure: "", price: 0 }]);
         setSelectedColors([]); // Clearing selected colors
         setCategory(""); // Clearing category
         setProductDescription("");
@@ -206,9 +226,9 @@ const AddProductPage = () => {
     additional = false
   ) => {
     setIsLoading(true);
-    const prompt = additional
-      ? `Create a very brief introduction in Spanish for the product ${product}, highlighting its key points.`
-      : `Generate a detailed description in Spanish for the product ${product}, highlighting all its features and benefits.`;
+    const prompt = !additional
+      ? `Genera una descripción detallada para el producto ${product}, destacando todas sus características y beneficios.`
+      : `Genera una muy breve introducción para el producto ${product}, resaltando sus puntos clave.`;
 
     try {
       const response = await fetch("/api/product-completion", {
@@ -302,7 +322,7 @@ const AddProductPage = () => {
       <div className="lg:flex w-full gap-8">
         <div className="w-full lg:1/2">
           <p className="uppercase font-medium text-sm text-gray-500">
-            💡 ¡Agreguemos un nuevo producto!
+            🛍️ ¡Agreguemos un nuevo producto!
           </p>
           <div className="flex gap-5 items-center">
             <input
@@ -328,40 +348,62 @@ const AddProductPage = () => {
             <div className="mt-4">
               {measurements.map((measurement, index) => (
                 <div key={index} className="flex items-center gap-4 mb-2">
-                  <Input
-                    type="text"
-                    value={measurement.measure}
-                    onChange={(e) =>
-                      handleMeasurementChange(index, "measure", e.target.value)
-                    }
-                    placeholder="Medida"
-                    className="p-2 border rounded w-1/3"
-                  />
+                  {userType === "sophilum" && (
+                    <>
+                      <Input
+                        type="text"
+                        value={measurement.measure}
+                        onChange={(e) =>
+                          handleMeasurementChange(
+                            index,
+                            "measure",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Medida"
+                        className="p-2 border rounded w-1/3"
+                      />
+                    </>
+                  )}
                   <div className="flex items-center">
                     <span className="text-gray-700 text-xl font-medium mr-2">
                       $
                     </span>
-                    <Input
-                      type="text"
-                      value={measurement.price}
-                      placeholder="Precio"
-                      onBlur={() => handlePriceBlur(index)}
-                      onChange={(e) => {
-                        const inputValue = e.target.value;
-                        handleMeasurementChange(index, "price", inputValue);
-                      }}
-                      className="p-2 border rounded w-40"
-                    />
+                    {userType === "joyasboulevard" && (
+                      <Input
+                        type="text"
+                        value={price}
+                        placeholder="Precio"
+                        onChange={(e) => setPrice(e.target.value)}
+                        onBlur={() => setPrice(parseFloat(price).toFixed(2))}
+                        className="p-2 border rounded w-40"
+                      />
+                    )}
+
+                    {userType === "sophilum" && (
+                      <Input
+                        type="text"
+                        value={measurement.price}
+                        placeholder="Precio"
+                        onBlur={() => handlePriceBlur(index)}
+                        onChange={(e) => {
+                          const inputValue = e.target.value;
+                          handleMeasurementChange(index, "price", inputValue);
+                        }}
+                        className="p-2 border rounded w-40"
+                      />
+                    )}
                   </div>
-                  {index === measurements.length - 1 && (
-                    <button
-                      onClick={addMeasurementField}
-                      className="ml-4 flex items-center justify-center bg-yellow-500 text-white h-8 w-8 rounded-full hover:bg-yellow-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
-                      aria-label="Agregar Medida/Precio"
-                    >
-                      +
-                    </button>
-                  )}
+                  {userType === "sophilum" &&
+                    index === measurements.length - 1 && (
+                      <button
+                        onClick={addMeasurementField}
+                        className="ml-4 flex items-center justify-center bg-yellow-500 text-white h-8 w-8 rounded-full hover:bg-yellow-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+                        aria-label="Agregar Medida/Precio"
+                      >
+                        +
+                      </button>
+                    )}
                 </div>
               ))}
             </div>
@@ -375,7 +417,10 @@ const AddProductPage = () => {
                 onChange={(e) => setCategory(e.target.value)}
                 label="Categoría"
               >
-                {CATEGORIES.map((category, index) => (
+                {(userType === "sophilum"
+                  ? SOPHILUM_CATEGORIES
+                  : JOYAS_BOULEVARD_CATEGORIES
+                ).map((category, index) => (
                   <MenuItem key={index} value={category}>
                     {category}
                   </MenuItem>
@@ -383,73 +428,75 @@ const AddProductPage = () => {
               </Select>
             </FormControl>
 
-            <div className="mt-5 grid grid-cols-2 gap-4">
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel id="colors-label">Colores</InputLabel>
-                <Select
-                  labelId="colors-label"
-                  id="colors"
-                  multiple
-                  value={selectedColors.map((color: any) => color.hex)}
-                  onChange={(e: any) => {
-                    const selectedColorObjects = e.target.value.map(
-                      (selectedHex: any) => {
-                        return colors.find(
-                          (color) => color.hex === selectedHex
-                        );
-                      }
-                    );
+            {userType === "sophilum" && (
+              <div className="mt-5 grid grid-cols-2 gap-4">
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel id="colors-label">Colores</InputLabel>
+                  <Select
+                    labelId="colors-label"
+                    id="colors"
+                    multiple
+                    value={selectedColors.map((color: any) => color.hex)}
+                    onChange={(e: any) => {
+                      const selectedColorObjects = e.target.value.map(
+                        (selectedHex: any) => {
+                          return colors.find(
+                            (color) => color.hex === selectedHex
+                          );
+                        }
+                      );
 
-                    setSelectedColors(selectedColorObjects);
-                  }}
-                  label="Colores"
-                  renderValue={(selected) =>
-                    selected
-                      .map((colorHex) => {
-                        const color = colors.find((c) => c.hex === colorHex);
-                        return color ? color.name : "";
-                      })
-                      .join(", ")
-                  }
-                >
-                  {colors.map((colorOption, index) => (
-                    <MenuItem key={index} value={colorOption.hex}>
-                      <Checkbox
-                        checked={selectedColors.some(
-                          (color: any) => color.hex === colorOption.hex
-                        )}
-                      />
-                      <ListItemText primary={colorOption.name} />
-                      <div
-                        style={{
-                          width: "1rem",
-                          height: "1rem",
-                          borderRadius: "50%",
-                          backgroundColor: colorOption.hex,
-                          display: "inline-block",
-                          marginLeft: "10px",
-                        }}
-                      ></div>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                      setSelectedColors(selectedColorObjects);
+                    }}
+                    label="Colores"
+                    renderValue={(selected) =>
+                      selected
+                        .map((colorHex) => {
+                          const color = colors.find((c) => c.hex === colorHex);
+                          return color ? color.name : "";
+                        })
+                        .join(", ")
+                    }
+                  >
+                    {colors.map((colorOption, index) => (
+                      <MenuItem key={index} value={colorOption.hex}>
+                        <Checkbox
+                          checked={selectedColors.some(
+                            (color: any) => color.hex === colorOption.hex
+                          )}
+                        />
+                        <ListItemText primary={colorOption.name} />
+                        <div
+                          style={{
+                            width: "1rem",
+                            height: "1rem",
+                            borderRadius: "50%",
+                            backgroundColor: colorOption.hex,
+                            display: "inline-block",
+                            marginLeft: "10px",
+                          }}
+                        ></div>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel>Tono de Luz</InputLabel>
-                <Select
-                  value={lightTone}
-                  onChange={(e) => setLightTone(e.target.value)}
-                  label="Tono de Luz"
-                >
-                  {LIGHT_TONES.map((lightToneOption, index) => (
-                    <MenuItem key={index} value={lightToneOption}>
-                      {lightToneOption}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel>Tono de Luz</InputLabel>
+                  <Select
+                    value={lightTone}
+                    onChange={(e) => setLightTone(e.target.value)}
+                    label="Tono de Luz"
+                  >
+                    {LIGHT_TONES.map((lightToneOption, index) => (
+                      <MenuItem key={index} value={lightToneOption}>
+                        {lightToneOption}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
           </div>
 
           <div className="border-b mt-2 lg:mt-1 mb-5 flex justify-between border-gray-300">
@@ -504,11 +551,16 @@ const AddProductPage = () => {
               onClick={handleSubmitProduct}
               variant="contained"
               sx={{
-                backgroundColor: "#E8B600", // Amarillo oscuro, pero claramente amarillo
-                boxShadow: "0 1px 14px 1px #E8B600", // Sombra en el mismo tono amarillo
+                backgroundColor:
+                  userType === "sophilum" ? "#E8B600" : "#212121",
+                boxShadow:
+                  userType === "sophilum"
+                    ? "0 1px 14px 1px #E8B600"
+                    : "0 1px 14px 1px #212121",
                 "&:hover": {
                   boxShadow: "none",
-                  backgroundColor: "#F1A700", // Un tono de amarillo ligeramente más oscuro para el efecto de hover
+                  backgroundColor:
+                    userType === "sophilum" ? "#F1A700" : "#000000",
                 },
               }}
             >

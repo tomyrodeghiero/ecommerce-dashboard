@@ -1,5 +1,6 @@
 // ** Type Imports
 import { PaletteMode } from "@mui/material";
+import { useEffect, useState } from "react";
 import { ThemeColor } from "src/@core/layouts/types";
 
 const DefaultPalette = (mode: PaletteMode, themeColor: ThemeColor) => {
@@ -8,9 +9,15 @@ const DefaultPalette = (mode: PaletteMode, themeColor: ThemeColor) => {
   const darkColor = "231, 227, 252";
   const mainColor = mode === "light" ? lightColor : darkColor;
 
+  const [userType, setUserType] = useState("");
+  useEffect(() => {
+    const storedUserType: any = localStorage.getItem("userType");
+    setUserType(storedUserType);
+  }, []);
+
   const primaryGradient = () => {
     if (themeColor === "primary") {
-      return "#ffca0a";
+      return userType === "sophilum" ? "#ffca0a" : "#777B82";
     } else if (themeColor === "secondary") {
       return "#9C9FA4";
     } else if (themeColor === "success") {
@@ -37,7 +44,7 @@ const DefaultPalette = (mode: PaletteMode, themeColor: ThemeColor) => {
     mode: mode,
     primary: {
       light: "#9E69FD",
-      main: "#B88E2F",
+      main: userType === "sophilum" ? "#B88E2F" : "#000000",
       dark: "#804BDF",
       contrastText: "#FFF",
     },

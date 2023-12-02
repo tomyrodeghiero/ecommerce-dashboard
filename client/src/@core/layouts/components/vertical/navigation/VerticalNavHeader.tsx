@@ -1,5 +1,5 @@
 // ** React Import
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 // ** Next Import
 import Link from "next/link";
@@ -51,8 +51,11 @@ const VerticalNavHeader = (props: Props) => {
   // ** Props
   const { verticalNavMenuBranding: userVerticalNavMenuBranding } = props;
 
-  // ** Hooks
-  const theme = useTheme();
+  const [userType, setUserType] = useState("");
+  useEffect(() => {
+    const storedUserType: any = localStorage.getItem("userType");
+    setUserType(storedUserType);
+  }, []);
 
   return (
     <MenuHeaderWrapper className="nav-header" sx={{ pl: 6 }}>
@@ -61,7 +64,15 @@ const VerticalNavHeader = (props: Props) => {
       ) : (
         <Link href="/my-products" passHref>
           <StyledLink className="mt-4">
-            <img src="/images/logotype.png" alt="logo" className="w-44" />
+            <img
+              src={`${
+                userType === "sophilum"
+                  ? "/images/sophilum-logotype.png"
+                  : "/images/joyeria-boulevard-logotype.png"
+              } `}
+              alt="logo"
+              className="w-44"
+            />
           </StyledLink>
         </Link>
       )}

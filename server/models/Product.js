@@ -17,10 +17,11 @@ const productSchema = new Schema({
   colors: [{ type: String, required: false }],
   sizes: [{ type: String, required: false }],
   lightTone: { type: String, required: false },
+  username: { type: String, required: false },
   measurements: [
     {
-      measure: { type: String, required: true },
-      price: { type: Number, required: true },
+      measure: { type: String, required: false },
+      price: { type: Number, required: false },
     },
   ],
 });

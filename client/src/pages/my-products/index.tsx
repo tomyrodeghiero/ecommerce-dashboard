@@ -39,6 +39,25 @@ const MyProductsPage = () => {
   const router = useRouter();
   const theme = useTheme();
 
+  const [userType, setUserType] = useState("");
+  useEffect(() => {
+    const storedUserType: any = localStorage.getItem("userType");
+    setUserType(storedUserType);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isAuthenticated = localStorage.getItem("authenticated");
+      const userType = localStorage.getItem("userType");
+
+      if (isAuthenticated !== "true") {
+        router.push("/pages/login");
+      } else {
+        fetchProducts(userType);
+      }
+    }
+  }, [router]);
+
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const handleProductClick = (productId: string) => {
@@ -58,25 +77,43 @@ const MyProductsPage = () => {
 
   const dropdownRef = useRef<any>(null);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (userType: any) => {
     setLoadingProducts(true);
 
     const response = await fetch("/api/products?page=1&limit=100");
     if (response.ok) {
       const data = await response.json();
-      setProducts(data.products);
+      let filteredProducts;
+
+      if (userType === "joyasboulevard") {
+        // Filtrar productos que pertenecen a 'joyasboulevard'
+        filteredProducts = data.products.filter(
+          (product: any) => product.username === "joyasboulevard"
+        );
+      } else if (userType === "sophilum") {
+        // Filtrar productos que pertenecen a 'sophilum' o no tienen 'username' definido
+        filteredProducts = data.products.filter(
+          (product: any) => product.username === "sophilum" || !product.username
+        );
+      } else {
+        // Si el userType no es ni 'joyasboulevard' ni 'sophilum', muestra todos los productos
+        filteredProducts = data.products;
+      }
+
+      setProducts(filteredProducts);
     }
 
     setLoadingProducts(false);
   };
 
   const handleDelete = async (productId: string) => {
+    const userType = localStorage.getItem("userType");
     const response = await fetch(`/api/delete-product/${productId}`, {
       method: "DELETE",
     });
 
     if (response.ok) {
-      fetchProducts();
+      fetchProducts(userType);
 
       toast.success("1 producto ha sido eliminado.", {
         position: "top-center",
@@ -115,7 +152,8 @@ const MyProductsPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    const userType = localStorage.getItem("userType");
+    fetchProducts(userType);
   }, []);
 
   const handleEdit = (productId: string) => {
@@ -179,6 +217,7 @@ const MyProductsPage = () => {
       }),
     });
 
+    const userType = localStorage.getItem("userType");
     if (response.ok) {
       toast.success("Los precios se han actualizado correctamente.", {
         position: "top-center",
@@ -190,7 +229,7 @@ const MyProductsPage = () => {
         progress: undefined,
       });
       // Recarga los productos para obtener los precios actualizados
-      fetchProducts();
+      fetchProducts(userType);
     } else {
       toast.error("Hubo un error al actualizar los precios.", {
         position: "top-center",
@@ -252,13 +291,17 @@ const MyProductsPage = () => {
               onClick={handleIncreasePrices}
               variant="contained"
               sx={{
-                backgroundColor: "#F1A700",
-                boxShadow: "0 1px 14px 1px #F1A700",
+                backgroundColor:
+                  userType === "sophilum" ? "#E8B600" : "#212121",
+                boxShadow:
+                  userType === "sophilum"
+                    ? "0 1px 14px 1px #E8B600"
+                    : "0 1px 14px 1px #212121",
                 "&:hover": {
                   boxShadow: "none",
-                  backgroundColor: "#F1A700",
+                  backgroundColor:
+                    userType === "sophilum" ? "#F1A700" : "#000000",
                 },
-                marginRight: "10px",
               }}
             >
               Aumentar precios
@@ -351,17 +394,25 @@ const MyProductsPage = () => {
                   <h3 className="font-bold text-[1.1rem] text-center">
                     {product.name}
                   </h3>
-                  <p
-                    className={`${
-                      getMinPrice(product) === 0
-                        ? "text-white bg-[#D5A701] px-2 py-1 rounded-lg"
-                        : "text-yellow-800"
-                    } mt-1 font-semibold`}
-                  >
-                    {getMinPrice(product) === 0
-                      ? "⚠️ Sin Precio"
-                      : `$ ${getMinPrice(product)}`}
-                  </p>
+                  {userType === "sophilum" && (
+                    <p
+                      className={`${
+                        getMinPrice(product) === 0
+                          ? "text-white bg-[#D5A701] px-2 py-1 rounded-lg"
+                          : "text-yellow-800"
+                      } mt-1 font-semibold`}
+                    >
+                      {getMinPrice(product) === 0
+                        ? "⚠️ Sin Precio"
+                        : `$ ${getMinPrice(product)}`}
+                    </p>
+                  )}
+
+                  {userType === "joyasboulevard" && (
+                    <p className={`text-yellow-800 mt-1 font-semibold`}>
+                      $ {formatPriceARS(product.price)}
+                    </p>
+                  )}
                 </div>
                 <TriangleImg
                   alt="triangle background"

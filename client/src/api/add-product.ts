@@ -14,6 +14,8 @@ export default async function handler(req: any, res: any) {
       sizes,
       lightTone,
       measurements,
+      username,
+      price,
     } = req.body;
 
     try {
@@ -33,6 +35,8 @@ export default async function handler(req: any, res: any) {
           sizes,
           lightTone,
           measurements,
+          username,
+          price,
         }),
         headers: { "Content-Type": "application/json" },
         redirect: "follow",

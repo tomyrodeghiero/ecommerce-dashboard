@@ -84,7 +84,7 @@ const UserDropdown = () => {
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
           src={`${
-            userType === "sophilum ? "
+            userType === "sophilum"
               ? "/images/avatars/sophilum-profile.jpeg"
               : " /images/avatars/joyeria-boulevard-profile.jpeg"
           }`}

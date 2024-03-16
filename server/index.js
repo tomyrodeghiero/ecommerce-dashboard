@@ -3,7 +3,6 @@ require("dotenv").config();
 const { HfInference } = require("@huggingface/inference");
 
 const HF_ACCESS_TOKEN = "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";
-const inference = new HfInference(HF_ACCESS_TOKEN);
 
 const express = require("express");
 const morgan = require("morgan");
@@ -20,6 +19,7 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const AdminUser = require("./models/AdminUser.js");
+const UserEmail = require('./models/UserEmail.js');
 
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
@@ -512,6 +512,24 @@ app.delete("/api/delete-color/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error al eliminar color" });
+  }
+});
+
+// Endpoint to save user emails
+app.post('/api/user-emails', async (req, res) => {
+  const { emailUser, ecommerceName } = req.body;
+
+  try {
+    const newUserEmail = new UserEmail({
+      emailUser,
+      ecommerceName
+    });
+
+    await newUserEmail.save();
+    res.status(201).json({ message: 'Email successfully registered.', data: newUserEmail });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error registering email.' });
   }
 });
 

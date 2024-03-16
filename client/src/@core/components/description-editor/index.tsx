@@ -9,7 +9,7 @@ export const DescriptionEditor = React.useCallback(
   ({ value, quillRef, onChange, generateDescription, loading }: any) => {
     return (
       <div className="relative">
-        {loading ? (
+        {/* {loading ? (
           <LoadingSpinner />
         ) : (
           <img
@@ -18,7 +18,7 @@ export const DescriptionEditor = React.useCallback(
             src={STARS_COPILOT_ICON}
             alt="Stars Copilot"
           />
-        )}
+        )} */}
         <ReactQuill
           ref={quillRef}
           value={addBreaksAfterPeriods(value)}

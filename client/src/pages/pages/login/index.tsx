@@ -98,22 +98,19 @@ const LoginPage = () => {
     const validCredentials = [
       { username: "joyas", password: "boulevardrc", type: "joyasboulevard" },
       { username: "sophilum", password: "iluminacionrc", type: "sophilum" },
+      { username: "d-pastel", password: "iluminacionpilar", type: "dpastel" },
     ];
 
-    // Busca si las credenciales ingresadas coinciden con alguna válida
     const userCredentials = validCredentials.find(
       (cred) => cred.username === username && cred.password === password
     );
 
     if (userCredentials) {
-      // Si las credenciales son válidas, establece 'authenticated' y el tipo en el localStorage
       localStorage.setItem("authenticated", "true");
       localStorage.setItem("userType", userCredentials.type);
 
-      // Redirige al usuario a la página /my-products
       router.push("/my-products");
     } else {
-      // Si las credenciales no son válidas, muestra un mensaje de error
       alert("Credenciales inválidas. Por favor, inténtalo de nuevo.");
     }
   };
@@ -172,6 +169,7 @@ const LoginPage = () => {
               />
             </FormControl>
             <Button
+              type="submit"
               fullWidth
               size="large"
               variant="contained"

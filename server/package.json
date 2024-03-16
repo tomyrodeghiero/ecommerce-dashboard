@@ -1,5 +1,8 @@
 {
   "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
   "dependencies": {
     "@huggingface/inference": "^2.6.1",
     "bcryptjs": "^2.4.3",

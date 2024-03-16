@@ -46,7 +46,7 @@ const EditProductPage = () => {
 
   const quillRef = useRef(null);
 
-  useEffect(() => {}, [quillRef]);
+  useEffect(() => { }, [quillRef]);
 
   // Additional state hooks for product details
   const [activeTab, setActiveTab] = useState<string>("briefDescription");
@@ -293,7 +293,7 @@ const EditProductPage = () => {
     ({ value, onChange, generateDescription, loading }: any) => {
       return (
         <div className="relative">
-          {loading ? (
+          {/* {loading ? (
             <LoadingSpinner />
           ) : (
             <img
@@ -302,7 +302,7 @@ const EditProductPage = () => {
               src={STARS_COPILOT_ICON}
               alt="Stars Copilot"
             />
-          )}
+          )} */}
           <ReactQuill
             ref={quillRef}
             value={addBreaksAfterPeriods(value)}
@@ -523,21 +523,19 @@ const EditProductPage = () => {
 
           <div className="border-b mt-2 lg:mt-1 mb-5 flex justify-between border-gray-300">
             <button
-              className={`flex-grow flex justify-center py-3 items-center ${
-                activeTab === "briefDescription"
+              className={`flex-grow flex justify-center py-3 items-center ${activeTab === "briefDescription"
                   ? "border-b-2 border-black"
                   : "text-gray-700"
-              }`}
+                }`}
               onClick={() => setActiveTab("briefDescription")}
             >
               Introducción
             </button>
             <button
-              className={`flex-grow flex justify-center py-3 items-center ${
-                activeTab === "description"
+              className={`flex-grow flex justify-center py-3 items-center ${activeTab === "description"
                   ? "border-b-2 border-black"
                   : "text-gray-700"
-              }`}
+                }`}
               onClick={() => setActiveTab("description")}
             >
               Descripción

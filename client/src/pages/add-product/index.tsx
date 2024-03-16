@@ -15,12 +15,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Importing necessary utility functions and constants
 import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
-import LoadingSpinner from "src/@core/components/loading-spinner";
 import {
   SOPHILUM_CATEGORIES,
   FORMATS,
   LIGHT_TONES,
   JOYAS_BOULEVARD_CATEGORIES,
+  D_PASTEL_SUBCATEGORIES,
+  DPASTEL_CATEGORIES,
 } from "src/utils/constants";
 import { addBreaksAfterPeriods, formatPriceARS } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
@@ -39,17 +40,17 @@ const AddProductPage = () => {
   // State hooks for managing product information
   const [productName, setProductName] = useState("");
   const [selectedColors, setSelectedColors] = useState([]);
-  const [lightTone, setLightTone] = useState("");
+  const [subcategory, setsubcategory] = useState("");
   const [colors, setColors] = useState<Color[]>([]);
 
   // Ref hook for accessing ReactQuill instance directly
   const quillRef = useRef<any>(null);
 
   // Effect for logging the Quill instance on mount
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
   // More state hooks for UI control and product details
-  const [activeTab, setActiveTab] = useState("briefDescription");
+  const [activeTab, setActiveTab] = useState(userType !== "dpastel" ? "description" : "briefDescription");
   const [additionalInformation, setAdditionalInformation] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -85,8 +86,8 @@ const AddProductPage = () => {
       return showErrorMessage("El nombre del producto está vacío");
     }
 
-    if (!additionalInformation) {
-      return showErrorMessage("La descripción breve del producto está vacía");
+    if (userType !== "dpastel" && !additionalInformation) {
+      return showErrorMessage("La introducción del producto está vacía");
     }
 
     if (!productDescription) {
@@ -104,7 +105,7 @@ const AddProductPage = () => {
     }
 
     if (
-      userType === "sophilum" &&
+      (userType === "sophilum" || userType === "dpastel") &&
       measurements.some(
         (measurement) => !measurement.measure || !measurement.price
       )
@@ -125,9 +126,8 @@ const AddProductPage = () => {
     if (userType === "joyasboulevard")
       formData.append("price", price.toString());
 
-    if (userType === "sophilum") {
+    if (userType === "sophilum" || userType === "dpastel") {
       measurements.forEach((measurement: any, index: number) => {
-        // Reemplaza la coma por un punto
         formData.append(`measurements[${index}][measure]`, measurement.measure);
         formData.append(
           `measurements[${index}][price]`,
@@ -142,7 +142,7 @@ const AddProductPage = () => {
         );
       });
 
-      formData.append("lightTone", lightTone);
+      formData.append("lightTone", subcategory);
     }
 
     if (mainImageUrl) {
@@ -173,7 +173,7 @@ const AddProductPage = () => {
         setMainImageUrl(null);
         setPreviewImages([]);
         setProductStock(1); // Reset stock to 1 or your default value
-        setLightTone(""); // Clearing light tone selection
+        setsubcategory(""); // Clearing light tone selection
 
         toast.success("El producto ha sido añadido.", {
           position: "top-center",
@@ -259,7 +259,7 @@ const AddProductPage = () => {
     ({ value, onChange, generateDescription, loading }: any) => {
       return (
         <div className="relative">
-          {loading ? (
+          {/* {loading ? (
             <LoadingSpinner />
           ) : (
             <img
@@ -268,7 +268,7 @@ const AddProductPage = () => {
               src={STARS_COPILOT_ICON}
               alt="Stars Copilot"
             />
-          )}
+          )} */}
           <ReactQuill
             ref={quillRef}
             value={addBreaksAfterPeriods(value)}
@@ -348,7 +348,7 @@ const AddProductPage = () => {
             <div className="mt-4">
               {measurements.map((measurement, index) => (
                 <div key={index} className="flex items-center gap-4 mb-2">
-                  {userType === "sophilum" && (
+                  {(userType === "sophilum" || userType === "dpastel") && (
                     <>
                       <Input
                         type="text"
@@ -380,7 +380,7 @@ const AddProductPage = () => {
                       />
                     )}
 
-                    {userType === "sophilum" && (
+                    {(userType === "sophilum" || userType === "dpastel") && (
                       <Input
                         type="text"
                         value={measurement.price}
@@ -394,7 +394,7 @@ const AddProductPage = () => {
                       />
                     )}
                   </div>
-                  {userType === "sophilum" &&
+                  {(userType === "sophilum" || userType === "dpastel") &&
                     index === measurements.length - 1 && (
                       <button
                         onClick={addMeasurementField}
@@ -411,24 +411,32 @@ const AddProductPage = () => {
 
           <div className="mt-5">
             <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="outlined-category">Categoría</InputLabel>
+              <InputLabel>Categoría</InputLabel>
               <Select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 label="Categoría"
               >
-                {(userType === "sophilum"
-                  ? SOPHILUM_CATEGORIES
-                  : JOYAS_BOULEVARD_CATEGORIES
-                ).map((category, index) => (
-                  <MenuItem key={index} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
+                {userType === "dpastel"
+                  ? DPASTEL_CATEGORIES.map((categoryOption, index) => (
+                    <MenuItem key={index} value={categoryOption}>
+                      {categoryOption}
+                    </MenuItem>
+                  ))
+                  : (userType === "sophilum"
+                    ? SOPHILUM_CATEGORIES
+                    : JOYAS_BOULEVARD_CATEGORIES
+                  ).map((categoryOption, index) => (
+                    <MenuItem key={index} value={categoryOption}>
+                      {categoryOption}
+                    </MenuItem>
+                  ))
+                }
               </Select>
             </FormControl>
 
-            {userType === "sophilum" && (
+
+            {(userType === "sophilum" || userType === "dpastel") && (
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <FormControl variant="outlined" fullWidth>
                   <InputLabel id="colors-label">Colores</InputLabel>
@@ -481,41 +489,56 @@ const AddProductPage = () => {
                   </Select>
                 </FormControl>
 
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Tono de Luz</InputLabel>
-                  <Select
-                    value={lightTone}
-                    onChange={(e) => setLightTone(e.target.value)}
-                    label="Tono de Luz"
-                  >
-                    {LIGHT_TONES.map((lightToneOption, index) => (
-                      <MenuItem key={index} value={lightToneOption}>
-                        {lightToneOption}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                {userType === "dpastel" ? (
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel>Subcategoría</InputLabel>
+                    <Select
+                      value={subcategory}
+                      onChange={(e) => setsubcategory(e.target.value)}
+                      label="Subcategoría"
+                    >
+                      {D_PASTEL_SUBCATEGORIES.map((subcategoryOption, index) => (
+                        <MenuItem key={index} value={subcategoryOption}>
+                          {subcategoryOption}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                ) : (
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel>Tono de Luz</InputLabel>
+                    <Select
+                      value={subcategory}
+                      onChange={(e) => setsubcategory(e.target.value)}
+                      label="Tono de Luz"
+                    >
+                      {LIGHT_TONES.map((lightToneOption, index) => (
+                        <MenuItem key={index} value={lightToneOption}>
+                          {lightToneOption}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
               </div>
             )}
           </div>
 
           <div className="border-b mt-2 lg:mt-1 mb-5 flex justify-between border-gray-300">
-            <button
-              className={`flex-grow flex justify-center py-3 items-center ${
-                activeTab === "briefDescription"
-                  ? "border-b-2 border-black"
-                  : "text-gray-700"
-              }`}
+            {userType !== "dpastel" && <button
+              className={`flex-grow flex justify-center py-3 items-center ${activeTab === "briefDescription"
+                ? "border-b-2 border-black"
+                : "text-gray-700"
+                }`}
               onClick={() => setActiveTab("briefDescription")}
             >
               Introducción
-            </button>
+            </button>}
             <button
-              className={`flex-grow flex justify-center py-3 items-center ${
-                activeTab === "description"
-                  ? "border-b-2 border-black"
-                  : "text-gray-700"
-              }`}
+              className={`flex-grow flex justify-center py-3 items-center ${activeTab === "description"
+                ? "border-b-2 border-black"
+                : "text-gray-700"
+                }`}
               onClick={() => setActiveTab("description")}
             >
               Descripción
@@ -552,15 +575,15 @@ const AddProductPage = () => {
               variant="contained"
               sx={{
                 backgroundColor:
-                  userType === "sophilum" ? "#E8B600" : "#212121",
+                  (userType === "sophilum" || userType === "dpastel") ? "#E8B600" : "#212121",
                 boxShadow:
-                  userType === "sophilum"
+                  (userType === "sophilum" || userType === "dpastel")
                     ? "0 1px 14px 1px #E8B600"
                     : "0 1px 14px 1px #212121",
                 "&:hover": {
                   boxShadow: "none",
                   backgroundColor:
-                    userType === "sophilum" ? "#F1A700" : "#000000",
+                    (userType === "sophilum" || userType === "dpastel") ? "#F1A700" : "#000000",
                 },
               }}
             >
@@ -573,7 +596,7 @@ const AddProductPage = () => {
             className="w-full h-96 rounded border-2 mt-5 border-dashed border-gray-300 flex items-center justify-center cursor-pointer"
           >
             {typeof window !== "undefined" &&
-            mainImageUrl instanceof window.File ? (
+              mainImageUrl instanceof window.File ? (
               <img
                 src={URL.createObjectURL(mainImageUrl)}
                 alt="Product Main"

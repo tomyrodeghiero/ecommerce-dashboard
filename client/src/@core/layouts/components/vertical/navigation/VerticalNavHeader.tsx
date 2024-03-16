@@ -65,13 +65,15 @@ const VerticalNavHeader = (props: Props) => {
         <Link href="/my-products" passHref>
           <StyledLink className="mt-4">
             <img
-              src={`${
+              src={
                 userType === "sophilum"
                   ? "/images/sophilum-logotype.png"
-                  : "/images/joyeria-boulevard-logotype.png"
-              } `}
-              alt="logo"
-              className="w-44"
+                  : userType === "dpastel"
+                    ? "/images/d-pastel-logotype.png"
+                    : "/images/joyeria-boulevard-logotype.png"
+              }
+              alt="Logotype"
+              className={userType === "dpastel" ? "w-28" : "w-44"}
             />
           </StyledLink>
         </Link>

@@ -64,3 +64,23 @@ export const FORMATS = [
   "image",
   "color",
 ];
+
+
+// D-pastel: Categories & Subcategories
+export const DPASTEL_CATEGORIES = ["Iluminación", "Accesorios de decoración", "Objetos de Arte"];
+
+export const D_PASTEL_SUBCATEGORIES = [
+  "Chandeliers",
+  "Lámpara de pie",
+  "Lampara de mesa",
+  "Velador",
+  "Aplique",
+  "Door stop",
+  "Puerteros",
+  "Sujetadores de cortina",
+  "Alsapaños",
+  "Servilleteros",
+  "Identificador de copas",
+  "Pesamanteles",
+  "Llaveros",
+];

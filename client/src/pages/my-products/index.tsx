@@ -38,6 +38,7 @@ const StyledCard = styled(Card)(({ theme, isSelected }: any) => ({
 const MyProductsPage = () => {
   const router = useRouter();
   const theme = useTheme();
+  const currentPath = router.pathname;
 
   const [userType, setUserType] = useState("");
   useEffect(() => {
@@ -86,18 +87,20 @@ const MyProductsPage = () => {
       let filteredProducts;
 
       if (userType === "joyasboulevard") {
-        // Filtrar productos que pertenecen a 'joyasboulevard'
         filteredProducts = data.products.filter(
           (product: any) => product.username === "joyasboulevard"
         );
+      }
+      else if (userType === "dpastel") {
+        filteredProducts = data.products.filter(
+          (product: any) => product.username === "dpastel"
+        );
       } else if (userType === "sophilum") {
-        // Filtrar productos que pertenecen a 'sophilum' o no tienen 'username' definido
         filteredProducts = data.products.filter(
           (product: any) => product.username === "sophilum" || !product.username
         );
       } else {
-        // Si el userType no es ni 'joyasboulevard' ni 'sophilum', muestra todos los productos
-        filteredProducts = data.products;
+        filteredProducts = [];
       }
 
       setProducts(filteredProducts);
@@ -274,8 +277,52 @@ const MyProductsPage = () => {
     setSelectedProducts(allProductIds);
   };
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const isMenuOpen = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const menuOptions = [
+    { title: "Mis Productos", path: "/my-products" },
+    { title: "Añadir Producto", path: "/add-product" },
+    { title: "Paleta de Colores", path: "/my-colors" },
+  ];
+
+  const handleNavigation = (path: any) => {
+    router.push(path);
+    setIsOpen(false);
+  };
+
+
+
   return (
     <ApexChartWrapper>
+      <div className="relative lg:hidden">
+        <div className="mt-2 w-full bg-white shadow rounded z-20">
+          {menuOptions.map((option, index) => (
+            <div key={index} className="flex flex-col">
+              <button
+                onClick={() => handleNavigation(option.path)}
+                className={`font-medium py-2 px-4 hover:bg-gray-100 w-full text-left ${currentPath === option.path ? "bg-blue-100 text-black" : "text-gray-900"}`}
+              >
+                - {option.title}
+              </button>
+              {index < menuOptions.length - 1 && (
+                <hr className="border-t mx-2 border-gray-200" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="flex justify-end items-center gap-4 p-4">
         {selectedProducts.length > 0 && (
           <>
@@ -292,15 +339,15 @@ const MyProductsPage = () => {
               variant="contained"
               sx={{
                 backgroundColor:
-                  userType === "sophilum" ? "#E8B600" : "#212121",
+                  (userType === "sophilum" || userType === "dpastel") ? "#E8B600" : "#212121",
                 boxShadow:
-                  userType === "sophilum"
+                  (userType === "sophilum" || userType === "dpastel")
                     ? "0 1px 14px 1px #E8B600"
                     : "0 1px 14px 1px #212121",
                 "&:hover": {
                   boxShadow: "none",
                   backgroundColor:
-                    userType === "sophilum" ? "#F1A700" : "#000000",
+                    (userType === "sophilum" || userType === "dpastel") ? "#F1A700" : "#000000",
                 },
               }}
             >
@@ -330,96 +377,95 @@ const MyProductsPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 lg:py-8">
         {loadingProducts
           ? Array.from({ length: 8 }).map((_, idx) => (
-              <StyledCard
-                key={idx}
-                className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
-              >
-                <div className="w-48 h-48 mt-5 mx-auto bg-gray-200 rounded-full"></div>
-                <div className="mt-5 flex flex-col items-center">
-                  <div className="bg-gray-200 w-2/3 h-4 my-2 rounded"></div>
-                  <div className="bg-gray-200 w-1/2 h-4 my-2 rounded"></div>
-                </div>
-              </StyledCard>
-            ))
+            <StyledCard
+              key={idx}
+              className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
+            >
+              <div className="w-48 h-48 mt-5 mx-auto bg-gray-200 rounded-full"></div>
+              <div className="mt-5 flex flex-col items-center">
+                <div className="bg-gray-200 w-2/3 h-4 my-2 rounded"></div>
+                <div className="bg-gray-200 w-1/2 h-4 my-2 rounded"></div>
+              </div>
+            </StyledCard>
+          ))
           : products.map((product) => (
-              <StyledCard
-                className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
-                key={product._id}
-                onClick={() => handleProductClick(product._id)}
-                isSelected={selectedProducts.includes(product._id)}
-              >
-                <img
-                  src={OPTIONS_ICON}
-                  alt="Options"
-                  className="w-4 object-cover cursor-pointer absolute top-2 right-2"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setSelectedProduct(product._id);
-                  }}
-                />
+            <StyledCard
+              className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
+              key={product._id}
+              onClick={() => handleProductClick(product._id)}
+              isSelected={selectedProducts.includes(product._id)}
+            >
+              <img
+                src={OPTIONS_ICON}
+                alt="Options"
+                className="w-4 object-cover cursor-pointer absolute top-2 right-2"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setSelectedProduct(product._id);
+                }}
+              />
 
-                {selectedProduct === product._id && (
+              {selectedProduct === product._id && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
+                >
                   <div
-                    ref={dropdownRef}
-                    className="absolute right-0 mt-2 w-28 bg-white rounded-md overflow-hidden z-10"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleEdit(product._id);
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
                   >
-                    <div
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleEdit(product._id);
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
-                    >
-                      Editar
-                    </div>
-                    <div
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleDelete(product._id);
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
-                    >
-                      Eliminar
-                    </div>
+                    Editar
                   </div>
+                  <div
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDelete(product._id);
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  >
+                    Eliminar
+                  </div>
+                </div>
+              )}
+
+              <img
+                src={product.mainImageUrl}
+                alt={product.name}
+                className="w-48 h-48 mt-5 mx-auto rounded-full object-cover"
+              />
+
+              <div className="mt-5 flex flex-col items-center">
+                <h3 className="font-bold text-[1.1rem] text-center">
+                  {product.name}
+                </h3>
+                {(userType === "sophilum" || userType === "dpastel") && (
+                  <p
+                    className={`${getMinPrice(product) === 0
+                      ? "text-white bg-[#D5A701] px-2 py-1 rounded-lg"
+                      : "text-yellow-800"
+                      } mt-1 font-semibold`}
+                  >
+                    {getMinPrice(product) === 0
+                      ? "⚠️ Sin Precio"
+                      : `$ ${getMinPrice(product)}`}
+                  </p>
                 )}
 
-                <img
-                  src={product.mainImageUrl}
-                  alt={product.name}
-                  className="w-48 h-48 mt-5 mx-auto rounded-full object-cover"
-                />
-
-                <div className="mt-5 flex flex-col items-center">
-                  <h3 className="font-bold text-[1.1rem] text-center">
-                    {product.name}
-                  </h3>
-                  {userType === "sophilum" && (
-                    <p
-                      className={`${
-                        getMinPrice(product) === 0
-                          ? "text-white bg-[#D5A701] px-2 py-1 rounded-lg"
-                          : "text-yellow-800"
-                      } mt-1 font-semibold`}
-                    >
-                      {getMinPrice(product) === 0
-                        ? "⚠️ Sin Precio"
-                        : `$ ${getMinPrice(product)}`}
-                    </p>
-                  )}
-
-                  {userType === "joyasboulevard" && (
-                    <p className={`text-yellow-800 mt-1 font-semibold`}>
-                      $ {formatPriceARS(product.price)}
-                    </p>
-                  )}
-                </div>
-                <TriangleImg
-                  alt="triangle background"
-                  src={`/images/misc/${imageSrc}`}
-                />
-              </StyledCard>
-            ))}
+                {userType === "joyasboulevard" && (
+                  <p className={`text-yellow-800 mt-1 font-semibold`}>
+                    $ {formatPriceARS(product.price)}
+                  </p>
+                )}
+              </div>
+              <TriangleImg
+                alt="triangle background"
+                src={`/images/misc/${imageSrc}`}
+              />
+            </StyledCard>
+          ))}
 
         <ToastContainer
           position="top-right"

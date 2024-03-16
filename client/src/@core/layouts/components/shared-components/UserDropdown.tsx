@@ -74,20 +74,20 @@ const UserDropdown = () => {
     <Fragment>
       <Badge
         overlap="circular"
-        onClick={handleDropdownOpen}
         sx={{ ml: 2, cursor: "pointer" }}
         badgeContent={<BadgeContentSpan />}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Avatar
-          alt="Sophilum"
-          onClick={handleDropdownOpen}
+          alt="User Profile"
           sx={{ width: 40, height: 40 }}
-          src={`${
+          src={
             userType === "sophilum"
               ? "/images/avatars/sophilum-profile.jpeg"
-              : " /images/avatars/joyeria-boulevard-profile.jpeg"
-          }`}
+              : userType === "dpastel"
+                ? "/images/avatars/d-pastel-profile.png"
+                : "/images/avatars/joyeria-boulevard-profile.jpeg"
+          }
         />
       </Badge>
       <Menu

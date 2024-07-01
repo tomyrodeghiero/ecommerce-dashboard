@@ -122,7 +122,7 @@ const ColorsPage = () => {
               color="primary"
               onClick={addNewColorRow}
             >
-              Add New Color
+              Añadir un Nuevo Color
             </Button>
             <Button
               variant="contained"
@@ -130,7 +130,7 @@ const ColorsPage = () => {
               onClick={updateColors}
               style={{ marginLeft: 10 }}
             >
-              Update Colors
+              Actualizar Colores
             </Button>
           </Grid>
         </Grid>

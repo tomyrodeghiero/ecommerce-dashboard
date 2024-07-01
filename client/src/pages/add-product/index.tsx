@@ -100,7 +100,7 @@ const AddProductPage = () => {
 
     if (!mainImageUrl) {
       return showErrorMessage(
-        "La URL principal de la imagen del producto está vacía"
+        "La Imagen principal del producto está vacía"
       );
     }
 
@@ -575,15 +575,15 @@ const AddProductPage = () => {
               variant="contained"
               sx={{
                 backgroundColor:
-                  (userType === "sophilum" || userType === "dpastel") ? "#E8B600" : "#212121",
+                  (userType === "sophilum") ? "#E8B600" : "#212121",
                 boxShadow:
-                  (userType === "sophilum" || userType === "dpastel")
+                  (userType === "sophilum")
                     ? "0 1px 14px 1px #E8B600"
                     : "0 1px 14px 1px #212121",
                 "&:hover": {
                   boxShadow: "none",
                   backgroundColor:
-                    (userType === "sophilum" || userType === "dpastel") ? "#F1A700" : "#000000",
+                    (userType === "sophilum") ? "#F1A700" : "#000000",
                 },
               }}
             >

@@ -1,9 +1,5 @@
 require("dotenv").config();
 
-const { HfInference } = require("@huggingface/inference");
-
-const HF_ACCESS_TOKEN = "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";
-
 const express = require("express");
 const morgan = require("morgan");
 const paymentRoutes = require("./src/routes/payment.routes.js");

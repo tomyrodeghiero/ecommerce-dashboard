@@ -28,7 +28,6 @@ const StyledCard = styled(Card)(({ theme, isSelected }: any) => ({
   position: "relative",
   backgroundColor: "#ffffff",
   transition: "transform 0.3s ease-in-out",
-  boxShadow: isSelected ? "0px 0px 10px #ffca0a" : "0px 0px 10px #F4F5F7",
   "&:hover": {
     transform: "scale(1.025)",
     cursor: "pointer",
@@ -339,15 +338,15 @@ const MyProductsPage = () => {
               variant="contained"
               sx={{
                 backgroundColor:
-                  (userType === "sophilum" || userType === "dpastel") ? "#E8B600" : "#212121",
+                  (userType === "sophilum") ? "#E8B600" : "#212121",
                 boxShadow:
-                  (userType === "sophilum" || userType === "dpastel")
+                  (userType === "sophilum")
                     ? "0 1px 14px 1px #E8B600"
                     : "0 1px 14px 1px #212121",
                 "&:hover": {
                   boxShadow: "none",
                   backgroundColor:
-                    (userType === "sophilum" || userType === "dpastel") ? "#F1A700" : "#000000",
+                    (userType === "sophilum") ? "#F1A700" : "#000000",
                 },
               }}
             >

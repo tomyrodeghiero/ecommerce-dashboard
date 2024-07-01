@@ -1,3 +1,5 @@
+import { D_PASTEL_SUBCATEGORIES, LIGHT_TONES } from "./constants";
+
 export function formatPriceARS(price: any): any {
   if (typeof price === "number") {
     let priceFormatted = price.toFixed(2).replace(".", ",");
@@ -47,4 +49,11 @@ export const removeEnLangPrefix = (path: string): string => {
 export const addBreaksAfterPeriods = (text: string) => {
   if (!text) return ""; // Retorna un string vacío si el texto no está definido
   return text.replace(/\./g, ".<br>");
+};
+
+export const getSubcategoriesOptions = (userType: string) => {
+  if (userType === 'sophilum') {
+    return LIGHT_TONES;
+  }
+  return D_PASTEL_SUBCATEGORIES;
 };

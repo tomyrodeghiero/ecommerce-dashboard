@@ -11,17 +11,18 @@ import {
 } from "@mui/material";
 import dynamic from "next/dynamic";
 import { toast, ToastContainer } from "react-toastify";
-import { IMAGE, STARS_COPILOT_ICON } from "src/utils/images/icons";
-import LoadingSpinner from "src/@core/components/loading-spinner";
+import { IMAGE } from "src/utils/images/icons";
 import Button from "@mui/material/Button";
 import {
   SOPHILUM_CATEGORIES,
   FORMATS,
   LIGHT_TONES,
   JOYAS_BOULEVARD_CATEGORIES,
+  DPASTEL_CATEGORIES,
+  D_PASTEL_SUBCATEGORIES,
 } from "src/utils/constants";
 import { useRouter } from "next/router";
-import { addBreaksAfterPeriods } from "src/utils/functions";
+import { addBreaksAfterPeriods, getSubcategoriesOptions } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
 
 // Import the editor component dynamically
@@ -49,7 +50,7 @@ const EditProductPage = () => {
   useEffect(() => { }, [quillRef]);
 
   // Additional state hooks for product details
-  const [activeTab, setActiveTab] = useState<string>("briefDescription");
+  const [activeTab, setActiveTab] = useState<string>("");
   const [productDescription, setProductDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState<any | null>(null);
@@ -115,6 +116,14 @@ const EditProductPage = () => {
     fetchProductDetails();
   }, [id]);
 
+  useEffect(() => {
+    if (userType === "dpastel") {
+      setActiveTab("description");
+    } else {
+      setActiveTab("briefDescription");
+    }
+  }, [userType]);
+
   const handleSubmitUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -123,7 +132,7 @@ const EditProductPage = () => {
       return showErrorMessage("El nombre del producto está vacío");
     }
 
-    if (!additionalInformation) {
+    if (!(userType === "dpastel") && !additionalInformation) {
       return showErrorMessage("La descripción breve del producto está vacía");
     }
 
@@ -137,12 +146,12 @@ const EditProductPage = () => {
 
     if (!mainImageUrl) {
       return showErrorMessage(
-        "La URL principal de la imagen del producto está vacía"
+        "La Imagen principal del producto está vacía"
       );
     }
 
     if (
-      userType === "sophilum" &&
+      userType === "sophilum" || userType === "dpastel" &&
       measurements.some(
         (measurement) => !measurement.measure || !measurement.price
       )
@@ -372,7 +381,7 @@ const EditProductPage = () => {
             <div className="mt-4">
               {measurements.map((measurement, index) => (
                 <div key={index} className="flex items-center gap-4 mb-2">
-                  {userType === "sophilum" && (
+                  {(userType === "sophilum" || userType === "dpastel") && (
                     <Input
                       type="text"
                       value={measurement.measure}
@@ -402,7 +411,7 @@ const EditProductPage = () => {
                       />
                     )}
 
-                    {userType === "sophilum" && (
+                    {(userType === "sophilum" || userType === "dpastel") && (
                       <Input
                         type="text"
                         value={measurement.price}
@@ -416,7 +425,7 @@ const EditProductPage = () => {
                       />
                     )}
                   </div>
-                  {userType === "sophilum" &&
+                  {(userType === "sophilum" || userType === "dpastel") &&
                     index === measurements.length - 1 && (
                       <button
                         onClick={addMeasurementField}
@@ -441,7 +450,9 @@ const EditProductPage = () => {
               >
                 {(userType === "sophilum"
                   ? SOPHILUM_CATEGORIES
-                  : JOYAS_BOULEVARD_CATEGORIES
+                  : userType === "dpastel"
+                    ? DPASTEL_CATEGORIES
+                    : JOYAS_BOULEVARD_CATEGORIES
                 ).map((category, index) => (
                   <MenuItem key={index} value={category}>
                     {category}
@@ -450,7 +461,7 @@ const EditProductPage = () => {
               </Select>
             </FormControl>
 
-            {userType === "sophilum" && (
+            {(userType === "sophilum" || userType === "dpastel") && (
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <FormControl variant="outlined" fullWidth>
                   <InputLabel id="colors-label">Colores</InputLabel>
@@ -458,44 +469,42 @@ const EditProductPage = () => {
                     labelId="colors-label"
                     id="colors"
                     multiple
-                    value={selectedColors.map((color: any) => color.hex)}
+                    value={selectedColors.length > 0 ? selectedColors.map((color: any) => color.hex) : []}
                     onChange={(e: any) => {
-                      const selectedColorObjects = e.target.value.map(
-                        (selectedHex: any) => {
-                          return colors.find(
-                            (color) => color.hex === selectedHex
-                          );
-                        }
-                      );
-
+                      const selectedColorObjects = e.target.value.map((selectedHex: any) => {
+                        return colors.find((color) => color.hex === selectedHex);
+                      });
                       setSelectedColors(selectedColorObjects);
                     }}
                     label="Colores"
-                    renderValue={(selected) =>
-                      selected
+                    renderValue={(selected) => {
+                      if (selected.length === 0) {
+                        return '';
+                      }
+                      return selected
                         .map((colorHex) => {
                           const color = colors.find((c) => c.hex === colorHex);
-                          return color ? color.name : "";
+                          return color ? color.name : '';
                         })
-                        .join(", ")
-                    }
+                        .join(', ');
+                    }}
                   >
                     {colors.map((colorOption, index) => (
                       <MenuItem key={index} value={colorOption.hex}>
                         <Checkbox
                           checked={selectedColors.some(
-                            (color: any) => color.hex === colorOption.hex
+                            (color) => color.hex === colorOption.hex
                           )}
                         />
                         <ListItemText primary={colorOption.name} />
                         <div
                           style={{
-                            width: "1rem",
-                            height: "1rem",
-                            borderRadius: "50%",
+                            width: '1rem',
+                            height: '1rem',
+                            borderRadius: '50%',
                             backgroundColor: colorOption.hex,
-                            display: "inline-block",
-                            marginLeft: "10px",
+                            display: 'inline-block',
+                            marginLeft: '10px'
                           }}
                         ></div>
                       </MenuItem>
@@ -510,9 +519,9 @@ const EditProductPage = () => {
                     onChange={(e) => setLightTone(e.target.value)}
                     label="Tono de Luz"
                   >
-                    {LIGHT_TONES.map((lightToneOption, index) => (
-                      <MenuItem key={index} value={lightToneOption}>
-                        {lightToneOption}
+                    {getSubcategoriesOptions(userType).map((option, index) => (
+                      <MenuItem key={index} value={option}>
+                        {option}
                       </MenuItem>
                     ))}
                   </Select>
@@ -522,19 +531,21 @@ const EditProductPage = () => {
           </div>
 
           <div className="border-b mt-2 lg:mt-1 mb-5 flex justify-between border-gray-300">
-            <button
-              className={`flex-grow flex justify-center py-3 items-center ${activeTab === "briefDescription"
+            {!(userType === "dpastel") &&
+              <button
+                className={`flex-grow flex justify-center py-3 items-center ${activeTab === "briefDescription"
                   ? "border-b-2 border-black"
                   : "text-gray-700"
-                }`}
-              onClick={() => setActiveTab("briefDescription")}
-            >
-              Introducción
-            </button>
+                  }`}
+                onClick={() => setActiveTab("briefDescription")}
+              >
+                Introducción
+              </button>
+            }
             <button
               className={`flex-grow flex justify-center py-3 items-center ${activeTab === "description"
-                  ? "border-b-2 border-black"
-                  : "text-gray-700"
+                ? "border-b-2 border-black"
+                : "text-gray-700"
                 }`}
               onClick={() => setActiveTab("description")}
             >

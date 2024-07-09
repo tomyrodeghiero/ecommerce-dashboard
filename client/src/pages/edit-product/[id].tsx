@@ -25,13 +25,14 @@ import { useRouter } from "next/router";
 import { addBreaksAfterPeriods, getSubcategoriesOptions } from "src/utils/functions";
 import { Color } from "src/utils/interfaces";
 
-// Import the editor component dynamically
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const EditProductPage = () => {
   const router = useRouter();
-  const { id } = router.query; // Get the ID from the URL.
+  const { id }: any = router.query;
 
+  const [mainImageFile, setMainImageFile] = useState(null);
+  const [secondaryImageFiles, setSecondaryImageFiles] = useState([]);
   const [userType, setUserType] = useState("");
   useEffect(() => {
     const storedUserType: any = localStorage.getItem("userType");
@@ -62,9 +63,11 @@ const EditProductPage = () => {
   const [measurements, setMeasurements] = useState([{ measure: "", price: 0 }]);
 
   // Handle the change of the main image
-  const handleMainImageChange = (event: any) => {
+  const handleMainImageChange = async (event: any) => {
     if (event.target.files && event.target.files[0]) {
-      setMainImageUrl(URL.createObjectURL(event.target.files[0]));
+      const file = event.target.files[0];
+      setMainImageFile(file);
+      setMainImageUrl(URL.createObjectURL(file));
     }
   };
 
@@ -163,54 +166,63 @@ const EditProductPage = () => {
 
     // Preparing data to send to the server
     const formData = new FormData();
+
+    formData.append("id", id);
     formData.append("name", productName);
-    formData.append("additionalInformation", additionalInformation);
     formData.append("description", productDescription);
+    formData.append("additionalInformation", additionalInformation);
+    formData.append("stock", productStock.toString());
     formData.append("category", category);
-    formData.append("stock", String(productStock)); // Ensure stock is a string
-    if (userType === "joyasboulevard")
-      formData.append("price", price.toString());
+    formData.append("lightTone", lightTone);
+
+    selectedColors.forEach((color, index) => {
+      formData.append(`colors[${index}]`, JSON.stringify(color));
+    });
+
     measurements.forEach((measurement, index) => {
       formData.append(`measurements[${index}][measure]`, measurement.measure);
-      if (measurement.price) {
-        formData.append(
-          `measurements[${index}][price]`,
-          measurement?.price.toString()
-        );
-      } else {
-        formData.append(`measurements[${index}][price]`, "0");
+      formData.append(`measurements[${index}][price]`, measurement.price.toString());
+    });
+
+    if (userType === "joyasboulevard") {
+      formData.append("price", price.toString());
+    }
+
+    // Append main image if it exists
+    if (mainImageFile) {
+      formData.append("images", mainImageFile);
+    }
+
+    // Append secondary images if they exist
+    secondaryImageFiles.forEach((file, index) => {
+      if (file) {
+        formData.append("images", file);
       }
     });
 
-    selectedColors.forEach((color) => {
-      const colorString = JSON.stringify(color);
-      formData.append("colors", colorString);
-    });
-
-    formData.append("lightTone", lightTone);
-
-    if (mainImageUrl) {
-      formData.append("mainImageUrl", mainImageUrl);
-    }
-
-    const response = await fetch(`/api/edit-product/${id}`, {
-      method: "PUT",
-      body: formData,
-    });
-
-    if (response.ok) {
-      toast.success("El producto ha sido actualizado correctamente.", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+    try {
+      const response = await fetch(`/api/edit-product/${id}`, {
+        method: 'PUT',
+        body: formData,
       });
-    } else {
-      toast.error("El producto no se ha podido ser actualizado.", {
+
+      if (response.ok) {
+        toast.success("El producto ha sido actualizado correctamente.", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      } else {
+        throw new Error('Error updating product');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("El producto no se ha podido actualizar.", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: false,
@@ -237,15 +249,18 @@ const EditProductPage = () => {
     });
   }
 
-  // Función para manejar el cambio en las imágenes secundarias
-  const handleSecondaryImageChange = (event: any, index: number) => {
+  const handleSecondaryImageChange = async (event: any, index: number) => {
     const newFile = event.target.files[0];
     if (newFile) {
-      const newFileUrl = URL.createObjectURL(newFile);
-      setSecondaryImageUrls((prevImages) => {
-        const updatedImages = [...prevImages];
-        updatedImages[index] = newFileUrl;
-        return updatedImages;
+      setSecondaryImageFiles((prev) => {
+        const updatedFiles: any = [...prev];
+        updatedFiles[index] = newFile;
+        return updatedFiles;
+      });
+      setSecondaryImageUrls((prevUrls) => {
+        const updatedUrls = [...prevUrls];
+        updatedUrls[index] = URL.createObjectURL(newFile);
+        return updatedUrls;
       });
     }
   };

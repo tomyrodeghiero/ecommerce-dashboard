@@ -236,8 +236,7 @@ app.put(
     } catch (error) {
       res.status(500).send(error);
     }
-  }
-);
+  });
 
 // create an api to get all the products
 app.get("/api/products", async (req, res) => {

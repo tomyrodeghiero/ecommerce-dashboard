@@ -26,12 +26,13 @@ const StyledCard = styled(Card)(({ theme, isSelected }) => ({
   padding: theme.spacing(1),
   position: "relative",
   backgroundColor: "#ffffff",
-  transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
+  transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease-in-out",
   "&:hover": {
     transform: "scale(1.025)",
     cursor: "pointer",
   },
-  boxShadow: isSelected ? "#E8B600" : "none",
+  border: isSelected ? "2px solid #E8B600" : "2px solid transparent",
+  boxShadow: isSelected ? "0 0 10px rgba(232, 182, 0, 0.5)" : "none",
 }));
 
 const MyProductsPage = () => {
@@ -336,16 +337,10 @@ const MyProductsPage = () => {
               onClick={handleIncreasePrices}
               variant="contained"
               sx={{
-                backgroundColor:
-                  (userType === "sophilum") ? "#E8B600" : "#212121",
-                boxShadow:
-                  (userType === "sophilum")
-                    ? "0 1px 14px 1px #E8B600"
-                    : "0 1px 14px 1px #212121",
+                backgroundColor: "#E8B600",
+                boxShadow: "0 1px 14px 1px #212121",
                 "&:hover": {
-                  boxShadow: "none",
-                  backgroundColor:
-                    (userType === "sophilum") ? "#F1A700" : "#000000",
+                  boxShadow: "#F1A700, 0 1px 14px 1px #212121",
                 },
               }}
             >

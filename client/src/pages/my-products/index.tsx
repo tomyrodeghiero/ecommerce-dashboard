@@ -21,17 +21,17 @@ const TriangleImg = styled("img")({
   position: "absolute",
 });
 
-const StyledCard = styled(Card)(({ theme, isSelected }: any) => ({
-  // Asegúrate de obtener la prop aquí
+const StyledCard = styled(Card)(({ theme, isSelected }) => ({
   borderRadius: theme.shape.borderRadius,
   padding: theme.spacing(1),
   position: "relative",
   backgroundColor: "#ffffff",
-  transition: "transform 0.3s ease-in-out",
+  transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
   "&:hover": {
     transform: "scale(1.025)",
     cursor: "pointer",
   },
+  boxShadow: isSelected ? "#E8B600" : "none",
 }));
 
 const MyProductsPage = () => {
@@ -247,20 +247,19 @@ const MyProductsPage = () => {
 
   const IncreasePriceSection = styled("div")(({ theme }) => ({
     position: "fixed",
-    top: theme.spacing(2), // o puedes usar un valor fijo como '10px'
-    right: theme.spacing(5), // o puedes usar un valor fijo como '10px'
-    zIndex: 9999, // asegúrate de que esté sobre otros elementos
+    top: theme.spacing(2),
+    right: theme.spacing(5),
+    zIndex: 9999,
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-end",
-    backgroundColor: "#f5f5fc", // un color de fondo claro, cambia según tu diseño
-    borderRadius: "8px", // bordes redondeados, ajusta a tu preferencia
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)", // sombra sutil, modifica como necesites
-    padding: "1rem", // espacio interior, ajusta según tu preferencia
-    width: "auto", // o un ancho específico si lo necesitas
-    maxWidth: "calc(100% - 1rem)", // para asegurar que no exceda el ancho de la ventana
-    boxSizing: "border-box", // para incluir el padding en el ancho definido
-    // Puedes agregar una transición para animar el fondo, bordes, etc.
+    backgroundColor: "#f5f5fc",
+    borderRadius: "8px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)",
+    padding: "1rem",
+    width: "auto",
+    maxWidth: "calc(100% - 1rem)",
+    boxSizing: "border-box",
     transition: "all 0.3s ease",
   }));
 
@@ -389,7 +388,6 @@ const MyProductsPage = () => {
           ))
           : products.map((product) => (
             <StyledCard
-              className="rounded-lg p-4 relative bg-white transition-transform duration-200 ease-in-out transform"
               key={product._id}
               onClick={() => handleProductClick(product._id)}
               isSelected={selectedProducts.includes(product._id)}

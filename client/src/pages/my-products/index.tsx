@@ -340,7 +340,7 @@ const MyProductsPage = () => {
                 backgroundColor: "#E8B600",
                 boxShadow: "0 1px 14px 1px #212121",
                 "&:hover": {
-                  boxShadow: "#F1A700, 0 1px 14px 1px #212121",
+                  boxShadow: "0 1px 14px 1px #212121",
                 },
               }}
             >

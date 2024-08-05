@@ -164,7 +164,6 @@ const MyProductsPage = () => {
   };
 
   const getMinPrice = (product: any) => {
-    // Verifica si el producto tiene medidas y precios válidos
     if (
       product.measurements &&
       product.measurements.length > 0 &&
@@ -172,24 +171,19 @@ const MyProductsPage = () => {
         (measure: any) => typeof measure.price === "number"
       )
     ) {
-      // Filtra y mapea para obtener solo precios válidos
       const prices = product.measurements
         .map((measure: any) => measure.price)
         .filter((price: number) => typeof price === "number" && !isNaN(price));
 
-      // Encuentra el precio mínimo
       const minPrice = Math.min(...prices);
 
-      // Maneja el caso de precio igual a 0
       if (minPrice === 0) {
         return 0;
       }
 
-      // Formatea y devuelve el precio mínimo
       return formatPriceARS(minPrice);
     }
 
-    // Retorna un mensaje si no se puede determinar el precio
     return 0;
   };
 
@@ -231,7 +225,6 @@ const MyProductsPage = () => {
         draggable: true,
         progress: undefined,
       });
-      // Recarga los productos para obtener los precios actualizados
       fetchProducts(userType);
     } else {
       toast.error("Hubo un error al actualizar los precios.", {

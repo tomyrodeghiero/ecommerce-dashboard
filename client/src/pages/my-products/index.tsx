@@ -1,6 +1,6 @@
 import "react-toastify/dist/ReactToastify.css";
 
-// ** Styled Component Import
+// Styled Component Import
 import ApexChartWrapper from "src/@core/styles/libs/react-apexcharts";
 
 import { ToastContainer, toast } from "react-toastify";
